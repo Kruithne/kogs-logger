@@ -1,0 +1,25 @@
+{
+	"name": "@kogs/logger",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "A simple logging utility.",
+	"main": "index.js",
+	"scripts": {
+		"test": "node test/test.mjs"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Kruithne/kogs-logger.git"
+	},
+	"keywords": [
+		"logging",
+		"logger",
+		"log"
+	],
+	"author": "Kruithne (kruithne@gmail.com)",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Kruithne/kogs-logger/issues"
+	},
+	"homepage": "https://github.com/Kruithne/kogs-logger#readme"
+}
