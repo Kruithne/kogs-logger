@@ -7,7 +7,7 @@
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended"
     ],
-    "ignorePatterns": ["*.js"],
+    "ignorePatterns": ["*.js", "*.d.ts"],
     "overrides": [
     ],
     "parser": "@typescript-eslint/parser",
