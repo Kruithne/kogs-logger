@@ -1,4 +1,5 @@
 test/
+docs/
 tsconfig.json
 .eslintrc.json
 .gitignore
