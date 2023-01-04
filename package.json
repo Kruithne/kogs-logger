@@ -1,6 +1,6 @@
 {
 	"name": "@kogs/logger",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"type": "module",
 	"description": "A simple logging utility.",
 	"main": "index.js",
@@ -21,5 +21,15 @@
 	"bugs": {
 		"url": "https://github.com/Kruithne/kogs-logger/issues"
 	},
-	"homepage": "https://github.com/Kruithne/kogs-logger#readme"
+	"homepage": "https://github.com/Kruithne/kogs-logger#readme",
+	"dependencies": {
+		"picocolors": "^1.0.0"
+	},
+	"devDependencies": {
+		"@kogs/test": "^2.1.2",
+		"@types/node": "^18.11.18",
+		"@typescript-eslint/eslint-plugin": "^5.48.0",
+		"@typescript-eslint/parser": "^5.48.0",
+		"eslint": "^8.31.0"
+	}
 }

@@ -1,13 +1,11 @@
 {
 	"compilerOptions": {
 		"declaration": true,
-		"emitDeclarationOnly": true,
 		"module": "esnext",
 		"target": "esnext",
 		"moduleResolution": "node",
-		"allowJs": true
 	},
 	"include": [
-		"./index.mjs"
+		"index.ts"
 	]
 }
