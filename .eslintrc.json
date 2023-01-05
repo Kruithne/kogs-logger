@@ -20,6 +20,7 @@
     ],
     "rules": {
         "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-inferrable-types": "off",
         "indent": [
             "error",
             "tab"
