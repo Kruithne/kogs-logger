@@ -1,5 +1,6 @@
 import test, { capture } from '@kogs/test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { log, Log, formatBraces } from '../index.js';
 
 await test.run(async () => {
@@ -257,3 +258,67 @@ await test.run(async () => {
 	assert.equal(stdout.length, 3);
 	assert.equal(stderr.length, 3);
 }, 'pipe() custom levels');
+
+await test.run(async () => {
+	const logger = new Log();
+	logger.unpipe();
+
+	const stream = fs.createWriteStream('./test/test-log.txt');
+	const output = logger.pipe(stream);
+
+	assert.ok(stream === output);
+
+	logger.info('This is an info log level!');
+	logger.warn('This is a warning log level!');
+	logger.error('This is an error log level!');
+	logger.success('This is a success log level!');
+
+	logger.addLevel('test');
+	logger.test('This is a test message');
+
+	await new Promise(res => stream.end(res));
+
+	const file = await fs.promises.readFile('./test/test-log.txt', 'utf8');
+	const lines = file.split('\n');
+
+	assert.equal(lines.length, 6);
+	assert.equal(lines[0], '[\x1B[36mi\x1B[39m] This is an info log level!');
+	assert.equal(lines[1], '[\x1B[33m!\x1B[39m] This is a warning log level!');
+	assert.equal(lines[2], '[\x1B[31mx\x1B[39m] This is an error log level!');
+	assert.equal(lines[3], '[\x1B[32m✓\x1B[39m] This is a success log level!');
+	assert.equal(lines[4], 'This is a test message');
+	assert.equal(lines[5], '');
+
+	await fs.promises.unlink('./test/test-log.txt');
+}, 'pipe() file stream');
+
+await test.run(async () => {
+	const logger = new Log();
+	logger.unpipe();
+
+	const stream = logger.pipe('./test/test-log.txt');
+	assert(stream instanceof fs.WriteStream);
+
+	logger.info('This is an info log level!');
+	logger.warn('This is a warning log level!');
+	logger.error('This is an error log level!');
+	logger.success('This is a success log level!');
+
+	logger.addLevel('test');
+	logger.test('This is a test message');
+
+	await new Promise(res => stream.end(res));
+
+	const file = await fs.promises.readFile('./test/test-log.txt', 'utf8');
+	const lines = file.split('\n');
+
+	assert.equal(lines.length, 6);
+	assert.equal(lines[0], '[\x1B[36mi\x1B[39m] This is an info log level!');
+	assert.equal(lines[1], '[\x1B[33m!\x1B[39m] This is a warning log level!');
+	assert.equal(lines[2], '[\x1B[31mx\x1B[39m] This is an error log level!');
+	assert.equal(lines[3], '[\x1B[32m✓\x1B[39m] This is a success log level!');
+	assert.equal(lines[4], 'This is a test message');
+	assert.equal(lines[5], '');
+
+	await fs.promises.unlink('./test/test-log.txt');
+}, 'pipe() file shortcut');

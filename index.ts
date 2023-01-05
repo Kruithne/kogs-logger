@@ -1,5 +1,6 @@
 import * as util from 'node:util';
 import pc from 'picocolors';
+import fs from 'node:fs';
 
 type Decorator = (message: string) => string;
 type StreamTargets = Set<string> | null;
@@ -66,17 +67,23 @@ export class Log {
 	 * @remarks
 	 * If `levels` is omitted, the stream will receive messages of all levels.
 	 *  
-	 * @param output - The output stream to write to.
+	 * @param output - The output stream to write to or a path to a file to write to.
 	 * @param levels - Optional array of levels to write to the output stream.
 	 * @param setDefault - Whether to set this stream as the default output.
+	 * @returns The output stream.
 	 */
-	pipe(output: NodeJS.WritableStream, levels?: string[], setDefault: boolean = false): void {
+	pipe(output: NodeJS.WritableStream | string, levels?: string[], setDefault: boolean = false): NodeJS.WritableStream {
+		if (typeof output === 'string')
+			output = fs.createWriteStream(output);
+
 		this.#streams.set(output, levels === undefined ? null : new Set(levels));
 
 		if (setDefault)
 			this.#defaultStream = output;
 		else if (this.#defaultStream === output)
 			this.#defaultStream = undefined;
+
+		return output;
 	}
 
 	/**

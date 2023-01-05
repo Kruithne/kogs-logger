@@ -133,6 +133,15 @@ log.info('This is an info message');
 
 > Note: If a logged message has no implicit output stream, but is caught by a catch-all stream, the message is considered to have been handled and will not be sent to the default fallback stream.
 
+If a string is passed as the first argument to `log.pipe()`, it will be treated as a file path and a writable stream will be created for it. For convienence, `log.pipe()` always returns the stream that was created or provided.
+
+```js
+const stream = log.pipe('my-logs.txt');
+log.info('This is an info message');
+
+// my-logs.txt -> [i] This is an info message
+```
+
 **Custom Loggers**
 
 By default, the `log` object is a singleton instance of the `Log` class. You can create your own instances of the `Log` class by importing it.
