@@ -66,6 +66,73 @@ log.add('This is a {custom} log level!');
 ```
 ![Snippet of code showing the default log levels](docs/readme-snippet-2.png)
 
+**Output Flow**
+
+By default, all log messages of the `info` and `success` level are written to `process.stdout`, and the `warn` and `error` levels are written to `process.stderr`.
+
+Additionally, `process.stdout` is configured as the default output stream. In the event that a message is logged, but there is no output stream to catch it, the message default will be used as a fallback.
+
+```js
+log.info('This is an info message');
+// stdout -> [i] This is an info message
+
+log.warn('This is a warning');
+// stderr -> [!] This is a warning
+
+log.addLevel('test', undefined, false);
+log.test('This is a test message');
+// stdout -> This is a test message
+```
+In the above example, the third parameter `addToDefault` for `log.addLevel()` is explicitly set to `false` to demonstrate that the default stream is used as a fallback.
+
+If `addToDefault` is set to `true`, the added `test` level will be implicitly added to the default stream, which at the time is `process.stdout`. The key difference between the two is that with `addToDefault` as `true`, the `test` level will stay assigned to `process.stdout` even if the default stream is changed.
+
+```js
+// Add `test` level to the default stream.
+log.addLevel('test', undefined, true);
+log.test('This is a test message');
+// stdout -> This is a test message
+
+// Change the default stream to `process.stderr`.
+log.pipe(process.stderr, ['warn', 'error'], true);
+log.test('This is a test message');
+// stdout -> This is a test message
+
+// Since `test` was implicitly added to the current default stream, it will stay assigned to the default stream at the time of creation.
+
+// Add `test2` level but do not add it to the default stream.
+// It will now fallback to `process.stderr`.
+log.addLevel('test2', undefined, false);
+log.test2('This is a test message');
+// stderr -> This is a test message
+
+// Change the default stream to `process.stdout`.
+log.pipe(process.stdout, ['info', 'success'], true);
+log.test2('This is a test message');
+// stdout -> This is a test message
+
+// Since `test2` was not implicitly added to the default stream, it will fallback to the default stream at the time of logging.
+```
+Additional output streams can be added by calling the `log.pipe()` method. The first argument is a writable stream, the second argument is an array of log levels to send to the stream, and the third argument is a boolean indicating whether this stream should be the default fallback stream.
+
+```js
+const myLoggingFile = fs.createWriteStream('my-logs.txt');
+log.pipe(myLoggingFile, ['test']);
+
+log.test('This is a test message');
+// myLoggingFile -> This is a test message
+```
+If the second argument is omitted, the output will be considered a catch-all stream and will receive **all** log messages.
+
+```js
+log.pipe(myLoggingFile);
+
+log.info('This is an info message');
+// myLoggingFile -> [i] This is an info message
+```
+
+> Note: If a logged message has no implicit output stream, but is caught by a catch-all stream, the message is considered to have been handled and will not be sent to the default fallback stream.
+
 **Custom Loggers**
 
 By default, the `log` object is a singleton instance of the `Log` class. You can create your own instances of the `Log` class by importing it.
