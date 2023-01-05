@@ -98,7 +98,8 @@ log.pipe(process.stderr, ['warn', 'error'], true);
 log.test('This is a test message');
 // stdout -> This is a test message
 
-// Since `test` was implicitly added to the current default stream, it will stay assigned to the default stream at the time of creation.
+// Since `test` was implicitly added to the current default stream, it will
+// stay assigned to the default stream at the time of creation.
 
 // Add `test2` level but do not add it to the default stream.
 // It will now fallback to `process.stderr`.
@@ -111,7 +112,8 @@ log.pipe(process.stdout, ['info', 'success'], true);
 log.test2('This is a test message');
 // stdout -> This is a test message
 
-// Since `test2` was not implicitly added to the default stream, it will fallback to the default stream at the time of logging.
+// Since `test2` was not implicitly added to the default stream, it will
+// fallback to the default stream at the time of logging.
 ```
 Additional output streams can be added by calling the `log.pipe()` method. The first argument is a writable stream, the second argument is an array of log levels to send to the stream, and the third argument is a boolean indicating whether this stream should be the default fallback stream.
 
