@@ -322,3 +322,39 @@ await test.run(async () => {
 
 	await fs.promises.unlink('./test/test-log.txt');
 }, 'pipe() file shortcut');
+
+await test.run(async () => {
+	const logger = new Log();
+
+	// Add a custom logging level.
+	logger.addLevel('test', undefined, false);
+
+	await test.capture((stdout, stderr) => {
+		logger.info('This is an info log level!');
+		logger.error('This is an error log level!');
+		
+		assert.equal(stdout.shift(), '[\x1B[36mi\x1B[39m] This is an info log level!\n');
+		assert.equal(stderr.shift(), '[\x1B[31mx\x1B[39m] This is an error log level!\n');
+
+		logger.pause();
+
+		logger.info('This is an info log level!');
+		logger.error('This is an error log level!');
+		logger.warn('This is a warning log level!');
+		logger.success('This is a success log level!');
+		logger.test('This is a test message');
+
+		assert.equal(stdout.length, 0);
+		assert.equal(stderr.length, 0);
+
+		logger.resume();
+
+		logger.info('This is an info log level!');
+		logger.error('This is an error log level!');
+		logger.test('This is a test message');
+
+		assert.equal(stdout.shift(), '[\x1B[36mi\x1B[39m] This is an info log level!\n');
+		assert.equal(stderr.shift(), '[\x1B[31mx\x1B[39m] This is an error log level!\n');
+		assert.equal(stdout.shift(), 'This is a test message\n');
+	});
+}, 'Pause/resume logging');

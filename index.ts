@@ -19,10 +19,33 @@ export class Log {
 	#loggingLevels: Set<string> = new Set(['info', 'warn', 'error', 'success']);
 	#streams: Map<NodeJS.WritableStream, StreamTargets> = new Map();
 	#defaultStream?: NodeJS.WritableStream;
+	#userPrompt?: string;
+	#isPaused: boolean = false;
 
 	constructor() {
 		this.pipe(process.stdout, ['info', 'success'], true);
 		this.pipe(process.stderr, ['warn', 'error']);
+	}
+
+	/**
+	 * Pauses logging from this instance.
+	 * 
+	 * @remarks
+	 * All calls to direct logging functions will be ignored until `resume()` is called.
+	 * This does not effect dynamic logging functions such as `prompt()` or `progress()`.
+	 */
+	pause(): void {
+		this.#isPaused = true;
+	}
+
+	/**
+	 * Resumes logging from this instance.
+	 * 
+	 * @remarks
+	 * Any messages sent while the logger was paused will not be retroactively logged.
+	 */
+	resume(): void {
+		this.#isPaused = false;
 	}
 
 	/**
@@ -138,6 +161,69 @@ export class Log {
 	}
 
 	/**
+	 * Prompts the user for input.
+	 * 
+	 * @remarks
+	 * The given prompt is displayed to the user and the user's response is
+	 * returned trimmed of whitespace. The prompt is always written to the
+	 * `process.stdout` stream, regardless of configured output streams.
+	 * 
+	 * @param message - Prompt to display to the user.
+	 * @param mask - If true, the user's input will be masked.
+	 * @returns The user's response.
+	 */
+	async prompt(message: string, mask: boolean = false): Promise<string> {
+		if (mask) {
+			return new Promise(resolve => {
+				process.stdin.setRawMode(true);
+
+				this.#userPrompt = message;
+				process.stdout.write(message);
+
+				let input = '';
+				const handler = (chunk: Buffer) => {
+					const key = chunk.toString();
+					if (key === '\r' || key === '\u0003') {
+						process.stdin.setRawMode(false);
+						process.stdout.write('\n');
+
+						process.stdin.off('data', handler);
+						process.stdin.pause();
+
+						this.#userPrompt = undefined;
+						resolve(key === '\r' ? input.trim() : null);
+					} else {
+						if (key === '\u0008' || key === '\u001B\u005B\u0033\u007E') {
+							// For backspace and delete, remove the last character.
+							input = input.slice(0, -1);
+						} else {
+							// Otherwise, add the character to the input if it's a printable character.
+							if (key.length === 1 && key >= ' ')
+								input += key;
+						}
+
+						process.stdout.clearLine(0);
+						process.stdout.cursorTo(0);
+						
+						const prompt = this.#userPrompt = message + '*'.repeat(input.length);
+						process.stdout.write(prompt);
+					}
+				};
+
+				process.stdin.on('data', handler);
+			});
+		} else {
+			return new Promise(resolve => {		
+				process.stdin.once('readable', () => {
+					const chunk = process.stdin.read();
+					if (chunk !== null)
+						resolve(chunk?.toString().trim() ?? null);
+				});
+			});
+		}
+	}
+
+	/**
 	 * Write a message to the logging output.
 	 * 
 	 * @remarks
@@ -149,6 +235,16 @@ export class Log {
 	 * @param args - The arguments to use when formatting the message.
 	 */
 	#write(level: string, message: string, ...args: string[]): void {
+		if (this.#isPaused)
+			return;
+
+		// TODO: Ideally we might want to check if we're actually targeting
+		// a TTY before doing this, but that seems like overkill for now.
+		if (this.#userPrompt !== undefined) {
+			process.stdout.clearLine(0);
+			process.stdout.cursorTo(0);
+		}
+		
 		const output = util.format(message, ... args);
 
 		let hasWritten = false;
@@ -161,6 +257,10 @@ export class Log {
 
 		if (!hasWritten)
 			this.#defaultStream?.write(output + '\n');
+
+		
+		if (this.#userPrompt !== undefined)
+			process.stdout.write(this.#userPrompt);
 	}
 }
 

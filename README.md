@@ -33,6 +33,78 @@ The builtin log levels have decorators that add colors to logged messages. Inste
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-3.png)
 
+**Pause/Resume Logging**
+
+The `log.pause()` and `log.resume()` methods can be used to temporarily disable logging. Any messages logged while logging is paused will be discarded and **not** retroactively logged when `log.resume()` is called.
+
+```js
+log.info('This is an info message');
+// > [i] This is an info message
+
+log.pause();
+log.info('This message will not be logged');
+
+log.resume();
+
+log.info('This message will be logged');
+// > [i] This message will be logged
+```
+
+**User Prompting**
+
+The `log.prompt()` method allows you to prompt the terminal user for input.
+
+```js
+const name = await log.prompt('What is your name? ');
+log.info('Hello, %s!', name);
+
+// > What is your name? [user input]
+// > [i] Hello, [user input]!
+```
+> Note: The prompt is always and only written to `process.stdout`, regardless of how the logger is configured.
+
+While `log.prompt()` is waiting for user input, logging functions can still be used freely (with the exception of dynamic functions such as `prompt()` and `progress()`).
+
+Messages logged while a prompt is active will appear above the prompt, and the prompt will be reprinted after the message is logged.
+
+```js
+log.info('This is the first message sent.');
+log.prompt('What is your name? ').then(name => {
+	log.info('Hello, %s!', name);
+});
+log.info('This is the second message sent.');
+
+// > [i] This is the first message sent.
+// > [i] This is the second message sent.
+// > What is your name? [user input]
+// > [i] Hello, [user input]!
+```
+If you want to ensure that nothing is logged while the user is being prompted, you can use the `log.pause()` and `log.resume()` methods.
+
+> Note: Keep in mind that all messages logged while the logger is paused will be discarded.
+
+```js
+log.pause();
+log.prompt('What is your name? ').then(name => {
+	log.info('Hello, %s!', name);
+	log.resume();
+});
+log.info('This message will not be logged');
+
+// > What is your name? [user input]
+// > [i] Hello, [user input]!
+```
+In some scenarios, the user may be entering sensitive information. In these cases, the second parameter of `log.prompt()` can be set to `true` to mask the user's input.
+
+> Note: Keep in mind that this only masks the input in the terminal, the actual value is still uncensored.
+```js
+const pass = await log.prompt('Password > ', true);
+log.info('Your password is %s', pass);
+
+// > Password > ******
+// > [i] Your password is potato
+```
+
 **Custom Log Levels**
 
 To add a custom logging level, use the `log.addLevel()` method. The first argument is the name of the level and must be a valid JavaScript identifier.
