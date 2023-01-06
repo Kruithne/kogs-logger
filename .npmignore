@@ -4,3 +4,4 @@ tsconfig.json
 .eslintrc.json
 .gitignore
 *.ts
+!*.d.ts
