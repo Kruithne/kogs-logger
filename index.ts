@@ -5,6 +5,24 @@ import fs from 'node:fs';
 type Decorator = (message: string) => string;
 type StreamTargets = Set<string> | null;
 
+interface Progress {
+	/**
+	 * Update the progress bar with a new value.
+	 * @param value - A value between 0 and 1.
+	 */
+	update(value: number): void;
+
+	/**
+	 * Cancel the progress bar.
+	 */
+	cancel(): void;
+	
+	/**
+	 * Finish the progress bar, indicating success.
+	 */
+	finish(): void;
+}
+
 /**
  * Formats any content within curly braces in the given message using the given decorator function.
  * @param message - The message to format.
@@ -158,6 +176,63 @@ export class Log {
 		} else {
 			throw new Error('Cannot create custom logging level with reserved name: ' + level);
 		}
+	}
+
+	/**
+	 * Render a dynamic progress bar.
+	 * 
+	 * @remarks
+	 * Messages sent using standard logging methods while a progress bar is active will
+	 * appear above the progress bar.
+	 * 
+	 * The progress bar does not automatically move to a 'finished' state when it is
+	 * updated with the value of `1`. You should call `.finish()` when completed.
+	 * 
+	 * @param prefix - The prefix to appear before the progress bar.
+	 * @param initialPct - The initial percentage to display (0-1).
+	 * @returns A controller for the progress bar.
+	 */
+	progress(prefix: string, initialPct: number = 0): Progress {
+		let currentValue = 0;
+		let finished = false;
+
+		const writeProgress = (value: number, color: Decorator, finish: boolean = false, first: boolean = false) => {
+			if (finished)
+				return;
+
+			currentValue = value;
+
+			const progress = Math.round(currentValue * 40);
+			const out = prefix + '[' + color('='.repeat(progress)) + ' '.repeat(40 - progress) + '] ' + Math.round(currentValue * 100) + '%';
+			const changed = out !== this.#userPrompt;
+
+			if (!first && changed) {
+				// \r - carriage return, moves cursor to beginning of line.
+				// \u001b[K - clear line from cursor to end of line.
+				process.stdout.write('\r\u001b[K');
+			}
+
+			if (finish) {
+				process.stdout.write(out + '\n');
+				this.#userPrompt = undefined;
+				finished = true;
+			} else if (changed) {
+				process.stdout.write(out);
+				this.#userPrompt = out;
+			}
+		};
+
+		writeProgress(initialPct, pc.yellow, false, true);
+
+		return {
+			update: (value: number) => {
+				value = Math.min(1, Math.max(0, value));
+				const autoFinish = value === 1;
+				writeProgress(value, autoFinish ? pc.green : pc.yellow, autoFinish);
+			},
+			cancel: () => writeProgress(currentValue, pc.red, true),
+			finish: () => writeProgress(1, pc.green, true)
+		};
 	}
 
 	/**

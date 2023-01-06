@@ -50,6 +50,57 @@ log.info('This message will be logged');
 // > [i] This message will be logged
 ```
 
+**Progress Bar**
+
+The `log.progress()` method allows you to display a dynamic progress bar in the terminal. The function is non-blocking and returns a progress bar object.
+
+> Note: Values provided to `progress.update()` are clamped between 0-1, meaning any value lower than 0 will be treated as 0, and any value higher than 1 will be treated as 1.
+
+```js
+const progress = log.progress('Downloading > ');
+const file = fs.createWriteStream('file.zip');
+
+https.get(someZipURL, (response) => {
+	// The content-length header being available depends
+	// on the server, but we'll use it for this example.
+	const total = parseInt(response.headers['content-length'], 10);
+
+	let downloaded = 0;
+	response.on('data', (chunk) => {
+		file.write(chunk);
+		downloaded += chunk.length;
+
+		// Update the progress bar with a value between 0-1.
+		progress.update(downloaded / total);
+	});
+
+	response.on('end', () => {
+		file.end();
+	});
+});
+
+// Downloading > [============                            ] 30%
+// Downloading > [========================                ] 60%
+// Downloading > [========================================] 100%
+```
+> Note: The progress bar is always and only written to `process.stdout`, regardless of how the logger is configured.
+
+> Note: Messages sent through the logger while a progress bar is active will appear above the progress bar, and the progress bar will be reprinted after the message is logged.
+
+Once `progress.update()` has been provided with a value of 1, the progress bar will automatically finish and turn green. To finish prematurely, you can call `progress.finish()`, which will skip to 100% and turn the progress bar green.
+
+In the event that you want to indicate failure, you can call `progress.cancel()` instead. This will leave the progress bar at its current value and turn it red.
+
+```js
+response.on('error', e => {
+	progress.cancel();
+	log.error('Failed to download file: %s', e.message);
+});
+
+// Downloading > [============                            ] 30%
+// > [!] Failed to download file: [error message]
+```
+
 **User Prompting**
 
 The `log.prompt()` method allows you to prompt the terminal user for input.
