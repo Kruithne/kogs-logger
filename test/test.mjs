@@ -1,4 +1,4 @@
-import test, { capture } from '@kogs/test';
+import test from '@kogs/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { log, Log, formatBraces } from '../index.js';
@@ -42,7 +42,7 @@ await test.run(async () => {
 	assert.throws(() => { logger.addLevel('addLevel'); });
 
 	// Overwriting a builtin logging level is allowed.
-	const { stdout } = await capture(() => {
+	const { stdout } = await test.capture(() => {
 		logger.info('This is an info log level!');
 		logger.addLevel('info', message => 'INFO: ' + message);
 		logger.info('This is an info log level!');
@@ -58,7 +58,7 @@ await test.run(async () => {
 	logger.addLevel('test', message => 'TEST: ' + message);
 	assert.equal(typeof logger.test, 'function');
 
-	const { stdout } = await capture(() => {
+	const { stdout } = await test.capture(() => {
 		logger.test('This is a test log level!');
 	});
 
