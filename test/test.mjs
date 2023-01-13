@@ -182,6 +182,18 @@ await test.run(async () => {
 }, 'Custom indentation');
 
 await test.run(async () => {
+	const logger = new Log();
+	const { stdout } = await test.capture(() => {
+		logger.write('Normal line termination');
+		logger.lineTerminator = '\r\n';
+		logger.write('Custom line termination');
+	});
+
+	assert.equal(stdout[0], 'Normal line termination\n');
+	assert.equal(stdout[1], 'Custom line termination\r\n');
+}, 'Custom line termination');
+
+await test.run(async () => {
 	const { stdout, stderr } = await test.capture(() => {
 		log.info('This is a {custom} message!');
 		log.error('This is a {custom} message!');

@@ -369,5 +369,16 @@ customLog.info('This is a custom log instance');
 
 Any changes made to the global `log` instance will not be reflected in custom log instances and vice versa. Unless you need to create multiple loggers, it is recommended to use the global `log` instance for convenience.
 
+**Line Termination**
+
+By default, output lines are terminated with the `\n` character. To change this, you can set the `lineTerminator` property.
+
+```js
+log.lineTerminator = '\r\n';
+log.info('This is an info message');
+
+// > [i] This is an info message\r\n
+```
+
 ## License
 The code in this repository is licensed under the ISC license. See the [LICENSE](LICENSE) file for more information.

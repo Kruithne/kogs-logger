@@ -59,6 +59,8 @@ export class Log {
 	#indentationLevel: number = 0;
 	indentString: string = '  ';
 
+	lineTerminator: string = '\n';
+
 	constructor() {
 		this.pipe(process.stdout, ['info', 'success'], true);
 		this.pipe(process.stderr, ['warn', 'error']);
@@ -264,7 +266,7 @@ export class Log {
 			}
 
 			if (finish) {
-				process.stdout.write(out + '\n');
+				process.stdout.write(out + this.lineTerminator);
 				this.#userPrompt = undefined;
 				finished = true;
 			} else if (changed) {
@@ -311,7 +313,7 @@ export class Log {
 					const key = chunk.toString();
 					if (key === '\r' || key === '\u0003') {
 						process.stdin.setRawMode(false);
-						process.stdout.write('\n');
+						process.stdout.write(this.lineTerminator);
 
 						process.stdin.off('data', handler);
 						process.stdin.pause();
@@ -384,14 +386,14 @@ export class Log {
 		if (level !== NO_LEVEL) {
 			for (const [stream, levels] of this.#streams) {
 				if (levels === null || levels.has(level)) {
-					stream.write(output + '\n');
+					stream.write(output + this.lineTerminator);
 					hasWritten = true;
 				}
 			}
 		}
 
 		if (!hasWritten)
-			this.#defaultStream?.write(output + '\n');
+			this.#defaultStream?.write(output + this.lineTerminator);
 
 		
 		if (this.#userPrompt !== undefined)
