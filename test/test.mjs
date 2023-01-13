@@ -82,6 +82,37 @@ await test.run(async () => {
 }, 'String formatting');
 
 await test.run(async () => {
+	const logger = new Log();
+
+	assert.equal(logger.enableMarkdown, true);
+
+	const { stdout } = await test.capture(() => {
+		logger.write('This is a **bold** message!');
+		logger.write('This is a *italic* message!');
+		logger.write('This is a ~~strikethrough~~ message!');
+	});
+
+	assert.equal(stdout[0], 'This is a \x1B[1mbold\x1B[22m message!\n');
+	assert.equal(stdout[1], 'This is a \x1B[3mitalic\x1B[23m message!\n');
+	assert.equal(stdout[2], 'This is a \x1B[9mstrikethrough\x1B[29m message!\n');
+}, 'Markdown formatting');
+
+await test.run(async () => {
+	const logger = new Log();
+	logger.enableMarkdown = false;
+
+	const { stdout } = await test.capture(() => {
+		logger.write('This is a **bold** message!');
+		logger.write('This is a *italic* message!');
+		logger.write('This is a ~~strikethrough~~ message!');
+	});
+
+	assert.equal(stdout[0], 'This is a **bold** message!\n');
+	assert.equal(stdout[1], 'This is a *italic* message!\n');
+	assert.equal(stdout[2], 'This is a ~~strikethrough~~ message!\n');
+}, 'Markdown formatting disabled');
+
+await test.run(async () => {
 	const { stdout, stderr } = await test.capture(() => {
 		log.info('This is a {custom} message!');
 		log.error('This is a {custom} message!');

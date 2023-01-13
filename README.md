@@ -38,11 +38,33 @@ log.info('This is a %s', 'formatted string');
 // > [i] This is a formatted string
 ```
 
+Arguments provided to the logging methods for string formatting are **not** subject to colour or Markdown formatting.
+
+```js
+log.info('My message is %s bold!', '**not**');
+// > [i] My message is **not** bold!
+```
+
 **Colour Formatting**
 
 The builtin log levels have decorators that add colors to logged messages. Instead of colouring the entire message, only text that appears between curly braces will be coloured.
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-3.png)
+
+**Markdown Formatting**
+
+By default, the logger supports the Markdown formatting syntax for `bold`, `italic` and `strikethrough` text.
+
+![Snippet of code showing the markdown formatted output](docs/readme-snippet-4.png)
+
+If you want to disable Markdown formatting, you can do so by setting the property `enableMarkdown` on the logger to `false`.
+
+```js
+log.enableMarkdown = false;
+
+log.info('This is a *bold* message');
+// > [i] This is a *bold* message
+```
 
 **Pause/Resume Logging**
 

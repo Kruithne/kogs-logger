@@ -35,12 +35,26 @@ export function formatBraces(message: string, decorator: Decorator): string {
 	return message.replace(/{(.*?)}/g, (_, p1) => decorator(p1));
 }
 
+/**
+ * Formats a string with some basic Markdown formatting.
+ * @param message - The message to format.
+ * @returns The formatted message.
+ */
+export function formatMarkdown(message: string): string {
+	message = message.replace(/\*\*(.*?)\*\*/g, (_, p1) => pc.bold(p1)); // Bold
+	message = message.replace(/\*(.*?)\*/g, (_, p1) => pc.italic(p1)); // Italic
+	message = message.replace(/~~(.*?)~~/g, (_, p1) => pc.strikethrough(p1)); // Strikethrough
+
+	return message;
+}
+
 export class Log {
 	#loggingLevels: Set<string> = new Set(['info', 'warn', 'error', 'success']);
 	#streams: Map<NodeJS.WritableStream, StreamTargets> = new Map();
 	#defaultStream?: NodeJS.WritableStream;
 	#userPrompt?: string;
 	#isPaused: boolean = false;
+	enableMarkdown: boolean = true;
 
 	constructor() {
 		this.pipe(process.stdout, ['info', 'success'], true);
@@ -330,8 +344,11 @@ export class Log {
 			process.stdout.clearLine(0);
 			process.stdout.cursorTo(0);
 		}
+
+		if (this.enableMarkdown)
+			message = formatMarkdown(message);
 		
-		const output = util.format(message, ... args);
+		const output = util.format(message, ...args);
 
 		let hasWritten = false;
 
