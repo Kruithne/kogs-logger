@@ -79,8 +79,8 @@ export class Log {
 
 	/**
 	 * Logs a message at the `info` level.
-	 * @param message Message to log with optional format specifiers.
-	 * @param args Arguments to use when formatting the message.
+	 * @param message - Message to log with optional format specifiers.
+	 * @param args - Arguments to use when formatting the message.
 	 */
 	info(message: string, ...args: string[]): void {
 		this.#write('info', formatBraces(`[{i}] ${message}`, pc.cyan), ...args);
@@ -88,8 +88,8 @@ export class Log {
 
 	/**
 	 * Logs a message at the `warn` level.
-	 * @param message Message to log with optional format specifiers.
-	 * @param args Arguments to use when formatting the message.
+	 * @param message - Message to log with optional format specifiers.
+	 * @param args - Arguments to use when formatting the message.
 	 */
 	warn(message: string, ...args: string[]): void {
 		this.#write('warn', formatBraces(`[{!}] ${message}`, pc.yellow), ...args);
@@ -97,8 +97,8 @@ export class Log {
 
 	/**
 	 * Logs a message at the `error` level.
-	 * @param message Message to log with optional format specifiers.
-	 * @param args Arguments to use when formatting the message.
+	 * @param message - Message to log with optional format specifiers.
+	 * @param args - Arguments to use when formatting the message.
 	 */
 	error(message: string, ...args: string[]): void {
 		this.#write('error', formatBraces(`[{x}] ${message}`, pc.red), ...args);
@@ -106,8 +106,8 @@ export class Log {
 
 	/**
 	 * Logs a message at the `success` level.
-	 * @param message Message to log with optional format specifiers.
-	 * @param args Arguments to use when formatting the message.
+	 * @param message - Message to log with optional format specifiers.
+	 * @param args - Arguments to use when formatting the message.
 	 */
 	success(message: string, ...args: string[]): void {
 		this.#write('success', formatBraces(`[{✓}] ${message}`, pc.green), ...args);
