@@ -461,3 +461,5 @@ await test.run(async () => {
 		assert.equal(stdout.shift(), 'This is a test message\n');
 	});
 }, 'Pause/resume logging');
+
+await test.results();
