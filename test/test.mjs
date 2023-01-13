@@ -177,7 +177,7 @@ await test.run(async () => {
 	assert.equal(stdout[2], '\t\tIndented message x2\n');
 	assert.equal(stdout[3], '\tIndented message x1\n');
 	assert.equal(stdout[4], '\t\t\t\t\t\tIndented message x6\n');
-	assert.equal(stdout[5], '\t\tIndented message x4\n');
+	assert.equal(stdout[5], '\t\t\t\tIndented message x4\n');
 	assert.equal(stdout[6], 'Normal message with no indentation.\n');
 }, 'Custom indentation');
 
