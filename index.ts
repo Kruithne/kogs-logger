@@ -5,6 +5,8 @@ import fs from 'node:fs';
 type Decorator = (message: string) => string;
 type StreamTargets = Set<string> | null;
 
+const NO_LEVEL = '';
+
 interface Progress {
 	/**
 	 * Update the progress bar with a new value.
@@ -64,6 +66,15 @@ export class Log {
 	 */
 	resume(): void {
 		this.#isPaused = false;
+	}
+
+	/**
+	 * Logs a message to the default output stream with no formatting.
+	 * @param message 
+	 * @param args 
+	 */
+	write(message: string, ...args: string[]): void {
+		this.#write(NO_LEVEL, message, ...args);
 	}
 
 	/**
@@ -323,10 +334,13 @@ export class Log {
 		const output = util.format(message, ... args);
 
 		let hasWritten = false;
-		for (const [stream, levels] of this.#streams) {
-			if (levels === null || levels.has(level)) {
-				stream.write(output + '\n');
-				hasWritten = true;
+
+		if (level !== NO_LEVEL) {
+			for (const [stream, levels] of this.#streams) {
+				if (levels === null || levels.has(level)) {
+					stream.write(output + '\n');
+					hasWritten = true;
+				}
 			}
 		}
 

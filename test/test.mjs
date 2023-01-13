@@ -9,6 +9,7 @@ await test.run(async () => {
 		log.warn('This is a warning log level!');
 		log.error('This is an error log level!');
 		log.success('This is a success log level!');
+		log.write('This is a plain message!');
 	});
 	
 	assert.equal(stdout[0], '[\x1B[36mi\x1B[39m] This is an info log level!\n');
@@ -16,6 +17,8 @@ await test.run(async () => {
 
 	assert.equal(stderr[0], '[\x1B[33m!\x1B[39m] This is a warning log level!\n');
 	assert.equal(stderr[1], '[\x1B[31mx\x1B[39m] This is an error log level!\n');
+
+	assert.equal(stdout[2], 'This is a plain message!\n');
 }, 'Default logging levels');
 
 await test.run(() => {

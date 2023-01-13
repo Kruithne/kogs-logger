@@ -18,6 +18,17 @@ By default, `@kogs/logger` has 4 log levels: `info`, `success`, `warn`, and `err
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-1.png)
 
+**Plain Text Logging**
+
+It may be preferable to log messages without a prefix/formatting, in which case you can use the `log.write()` method.
+
+Since this has no associated log level, it will be sent to the default stream only, regardless of how the logger is configured.
+
+```js
+log.write('Hello, world!');
+// > Hello, world!
+```
+
 **String Formatting**
 
 All logging methods support string formatting using the [util.format()](https://nodejs.org/api/util.html#utilformatformat-args). See the documentation for more information.
