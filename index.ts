@@ -69,9 +69,9 @@ export class Log {
 	}
 
 	/**
-	 * Logs a message to the default output stream with no formatting.
-	 * @param message 
-	 * @param args 
+	 * Logs a message to the default output stream with no prefix/colour.
+	 * @param message - The message to log.
+	 * @param args - Arguments to use when formatting the message.
 	 */
 	write(message: string, ...args: string[]): void {
 		this.#write(NO_LEVEL, message, ...args);
