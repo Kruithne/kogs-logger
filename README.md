@@ -247,6 +247,76 @@ log.info('Your password is %s', pass);
 // > [i] Your password is potato
 ```
 
+**User Choice**
+
+When writing a CLI application, you may want to prompt the user to choose from a list of options. The `log.choice()` method allows you to do this.
+
+```js
+log.info('What is your favorite color?');
+const choice = await log.choice('Blue', 'Red');
+log.success('You chose %s!', choice);
+
+// > [i] What is your favorite color?
+// >     (b) Blue    (r) Red    
+// > [✓] You chose Blue!
+```
+
+A few things here are happening by default here which we can customize. The first is that we are automatically assigning a key to each choice. This is done by taking the first letter of the choice and using it as the key.
+
+To customize the keys, pass an array of objects instead of strings. Each object must have a `label` property, and can optionally have a `key` property.
+
+```js
+const choice = await log.choice([
+	{ label: 'Continue', key: 'C' },
+	{ label: 'Cancel', key: 'X' }
+]);
+
+// >     (C) Continue    (X) Cancel    
+```
+
+You're not restricted to just letters. For example if you wanted to use `Enter` and `Escape`, you could use the escape codes `\r` and `\x1B` respectively.
+
+Something to keep in mind is using escape codes like this will result in weird labels. To fix this, set `prependKey` to `false` in the options (the second argument to `log.choice`) and include the keys as part of your labels - this also allows you to customize them!
+
+```js
+import pc from 'picocolors';
+const choice = await log.choice([
+	{ label: `(${pc.green('Enter')}) Continue`, key: '\r' },
+	{ label: `(${pc.red('Esc')}) Cancel`, key: '\x1B' }
+], { prependKey: false });
+
+// >     (Enter) Continue    (Esc) Cancel    
+```
+
+The return value from `log.choice` is the label of the choice that was selected. To change what is returned, you can set the `value` property on the choice object; this can be a `string`, `number` or `boolean`.
+
+```js
+const choice = await log.choice([
+	{ label: 'Continue', value: 'opt-continue' },
+	{ label: 'Cancel', value: 'opt-cancel' }
+]);
+
+// >    (c) Continue    (2) Cancel
+
+if (choice === 'opt-continue') {
+	// ...
+} else if (choice === 'opt-cancel') {
+	// ...
+}
+```
+In the above example, the `Cancel` choice is assigned the key `2` because the first letter of `Cancel` is `C`, which is already taken by the `Continue` choice.
+
+By default, the margin (space either side of the choices) is 4. This can be customized by setting the `margin` property in the options object.
+
+```js
+const choice = await log.choice([
+	{ label: 'Continue', key: 'C' },
+	{ label: 'Cancel', key: 'X' }
+], { margin: 2 });
+
+// >  (C) Continue  (X) Cancel  
+```
+
 **Custom Log Levels**
 
 To add a custom logging level, use the `log.addLevel()` method. The first argument is the name of the level and must be a valid JavaScript identifier.

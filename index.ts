@@ -5,6 +5,19 @@ import fs from 'node:fs';
 type Decorator = (message: string) => string;
 type StreamTargets = Set<string> | null;
 
+type ChoiceValue = string|number|boolean;
+
+type Choice = {
+	label: string;
+	value?: ChoiceValue;
+	key?: string;
+};
+
+type ChoiceOptions = {
+	margin?: number;
+	prependKey?: boolean;
+};
+
 const NO_LEVEL = '';
 
 interface Progress {
@@ -353,6 +366,96 @@ export class Log {
 				});
 			});
 		}
+	}
+
+	/**
+	 * Prompts the user to select a choice from a list.
+	 * @param choices - Choices to display to the user.
+	 * @param options - Options for the choice prompt.
+	 * @returns A promise that resolves to the user's choice.
+	 */
+	async choice(choices: Array<Choice|string>, options?: ChoiceOptions): Promise<ChoiceValue> {
+		if (choices.length === 0)
+			throw new Error('log.choice(): No choices provided');
+
+		const parsedChoices: Choice[] = choices.map(choice => typeof choice === 'string' ? { label: choice } : choice);
+		const assignedKeys = new Set<string>();
+
+		// If the user has defined the key, use it. Otherwise, generate a key. This
+		// is to allow users to override the key generation scheme if they wish.
+		for (const choice of parsedChoices) {
+			if (choice.key !== undefined) {
+				if (assignedKeys.has(choice.key))
+					throw new Error(`log.choice(): Choice ${choice.label} assigned duplicate key ${choice.key}`);
+
+				assignedKeys.add(choice.key);
+			}
+		}
+
+		const output: string[] = [''];
+		for (const choice of parsedChoices) {
+			// Generate keys for any choices that don't have them.
+			if (choice.key === undefined) {
+				// Attempt to use the first letter of the label.
+				let newKey: string = choice.label.toLowerCase().match(/[a-z]/)?.[0];
+
+				// If no letter is found, or the letter is already assigned, use a number instead.
+				if (newKey === undefined || assignedKeys.has(newKey)) {
+					let choiceNumber = parsedChoices.indexOf(choice) + 1;
+					newKey = choiceNumber.toString();
+
+					// If the number is already assigned, keep incrementing until we find an unused number.
+					while (assignedKeys.has(newKey)) {
+						choiceNumber++;
+						newKey = choiceNumber.toString();
+					}
+				}
+
+				choice.key = newKey;
+				assignedKeys.add(newKey);
+			}
+
+			// Add each choice to the output.
+			if (options?.prependKey ?? true)
+				output.push(`(${choice.key}) ${choice.label}`);
+			else
+				output.push(choice.label);
+		}
+
+		// A blank string is left at the start and end of the output array so when
+		// formatted, the same margin between the choices is used before and after.
+		// This looks nicer and pushes the cursor away from the choices.
+		output.push('');
+
+		this.#userPrompt = output.join(' '.repeat(options?.margin ?? 4));
+		process.stdout.write(this.#userPrompt);
+
+		return new Promise(resolve => {
+			process.stdin.setRawMode(true);
+
+			const handler = (chunk: Buffer) => {
+				const key = chunk.toString();
+
+				// Allow CTRL+C to exit the process still.
+				if (key === '\u0003')
+					return process.exit();
+
+				for (const choice of parsedChoices) {
+					if (choice.key === key) {
+						process.stdin.setRawMode(false);
+						process.stdout.write(this.lineTerminator);
+
+						process.stdin.off('data', handler);
+						process.stdin.pause();
+
+						this.#userPrompt = undefined;
+						resolve(choice.value ?? choice.label);
+					}
+				}
+			};
+
+			process.stdin.on('data', handler);
+		});
 	}
 
 	/**
