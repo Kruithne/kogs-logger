@@ -90,17 +90,21 @@ export class Log {
 	/**
 	 * Adds a level of indentation to the logger.
 	 * @param amount - The amount of indentation to add.
+	 * @returns The logger instance.
 	 */
-	indent(amount: number = 1): void {
+	indent(amount: number = 1): Log {
 		this.#indentationLevel = Math.max(this.#indentationLevel + amount, 0);
+		return this;
 	}
 
 	/**
 	 * Removes a level of indentation from the logger.
 	 * @param amount - The amount of indentation to remove.
+	 * @returns The logger instance.
 	 */
-	outdent(amount: number = 1): void {
+	outdent(amount: number = 1): Log {
 		this.#indentationLevel = Math.max(this.#indentationLevel - amount, 0);
+		return this;
 	}
 
 	/**

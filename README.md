@@ -117,6 +117,13 @@ log.info('This is an info message again');
 // > [i] This is an info message again
 ```
 
+For additional convinience, the `log.indent()` and `log.outdent()` functions are fluid and return the logger instance, allowing you to chain them together.
+
+```js
+log.indent().write('Something');
+// >     Something
+```
+
 **Pause/Resume Logging**
 
 The `log.pause()` and `log.resume()` methods can be used to temporarily disable logging. Any messages logged while logging is paused will be discarded and **not** retroactively logged when `log.resume()` is called.
