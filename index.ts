@@ -56,6 +56,9 @@ export class Log {
 	#isPaused: boolean = false;
 	enableMarkdown: boolean = true;
 
+	#indentationLevel: number = 0;
+	indentString: string = '  ';
+
 	constructor() {
 		this.pipe(process.stdout, ['info', 'success'], true);
 		this.pipe(process.stderr, ['warn', 'error']);
@@ -80,6 +83,29 @@ export class Log {
 	 */
 	resume(): void {
 		this.#isPaused = false;
+	}
+
+	/**
+	 * Adds a level of indentation to the logger.
+	 * @param amount - The amount of indentation to add.
+	 */
+	indent(amount: number = 1): void {
+		this.#indentationLevel = Math.max(this.#indentationLevel + amount, 0);
+	}
+
+	/**
+	 * Removes a level of indentation from the logger.
+	 * @param amount - The amount of indentation to remove.
+	 */
+	outdent(amount: number = 1): void {
+		this.#indentationLevel = Math.max(this.#indentationLevel - amount, 0);
+	}
+
+	/**
+	 * Clears all indentation from the logger.
+	 */
+	clearIndentation(): void {
+		this.#indentationLevel = 0;
 	}
 
 	/**
@@ -348,7 +374,10 @@ export class Log {
 		if (this.enableMarkdown)
 			message = formatMarkdown(message);
 		
-		const output = util.format(message, ...args);
+		let output = util.format(message, ...args);
+
+		if (this.#indentationLevel > 0)
+			output = this.indentString.repeat(this.#indentationLevel) + output;
 
 		let hasWritten = false;
 

@@ -66,6 +66,57 @@ log.info('This is a *bold* message');
 // > [i] This is a *bold* message
 ```
 
+**Indentation**
+
+The `log.indent()` and `log.outdent()` methods can be used to indent and unindent the logger's output.
+
+```js
+log.info('This is an info message');
+// > [i] This is an info message
+
+log.indent();
+log.info('This is an indented info message');
+// > [i] This is an indented info message
+
+log.outdent();
+log.info('This is an info message again');
+// > [i] This is an info message again
+```
+
+By default, indentation is done using 2 spaces. You can change this by setting the `indentString` property on the logger.
+
+```js
+log.indentString = '\t';
+log.indent();
+
+log.info('This is an indented info message');
+// > [i] 	This is an indented info message
+```
+
+Additionally, you can provide a number to `log.indent()` and `log.outdent()` to specify the number of indentations to add/remove.
+
+```js
+log.indent(4);
+log.info('This is an indented info message');
+// > [i]             This is an indented info message
+
+log.outdent(2);
+log.info('This is an info message again');
+// > [i]     This is an info message again
+```
+
+The convinience method `log.clearIndentation()` can be used to reset the indentation level to 0.
+
+```js
+log.indent(4);
+log.info('This is an indented info message');
+// > [i]         This is an indented info message
+
+log.clearIndentation();
+log.info('This is an info message again');
+// > [i] This is an info message again
+```
+
 **Pause/Resume Logging**
 
 The `log.pause()` and `log.resume()` methods can be used to temporarily disable logging. Any messages logged while logging is paused will be discarded and **not** retroactively logged when `log.resume()` is called.

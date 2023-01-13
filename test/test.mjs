@@ -113,6 +113,75 @@ await test.run(async () => {
 }, 'Markdown formatting disabled');
 
 await test.run(async () => {
+	const logger = new Log();
+
+	const { stdout } = await test.capture(() => {
+		logger.write('Normal message with no indentation.');
+
+		logger.indent();
+		logger.write('Indented message x1');
+
+		logger.indent();
+		logger.write('Indented message x2');
+
+		logger.outdent();
+		logger.write('Indented message x1');
+
+		logger.indent(5);
+		logger.write('Indented message x6');
+
+		logger.outdent(2);
+		logger.write('Indented message x4');
+
+		logger.clearIndentation();
+		logger.write('Normal message with no indentation.');
+	});
+
+	assert.equal(stdout[0], 'Normal message with no indentation.\n');
+	assert.equal(stdout[1], '  Indented message x1\n');
+	assert.equal(stdout[2], '    Indented message x2\n');
+	assert.equal(stdout[3], '  Indented message x1\n');
+	assert.equal(stdout[4], '            Indented message x6\n');
+	assert.equal(stdout[5], '        Indented message x4\n');
+	assert.equal(stdout[6], 'Normal message with no indentation.\n');
+}, 'Indentation functions');
+
+await test.run(async () => {
+	const logger = new Log();
+
+	const { stdout } = await test.capture(() => {
+		logger.indentString = '\t';
+		logger.write('Normal message with no indentation.');
+
+		logger.indent();
+		logger.write('Indented message x1');
+
+		logger.indent();
+		logger.write('Indented message x2');
+
+		logger.outdent();
+		logger.write('Indented message x1');
+
+		logger.indent(5);
+		logger.write('Indented message x6');
+
+		logger.outdent(2);
+		logger.write('Indented message x4');
+
+		logger.clearIndentation();
+		logger.write('Normal message with no indentation.');
+	});
+
+	assert.equal(stdout[0], 'Normal message with no indentation.\n');
+	assert.equal(stdout[1], '\tIndented message x1\n');
+	assert.equal(stdout[2], '\t\tIndented message x2\n');
+	assert.equal(stdout[3], '\tIndented message x1\n');
+	assert.equal(stdout[4], '\t\t\t\t\t\tIndented message x6\n');
+	assert.equal(stdout[5], '\t\tIndented message x4\n');
+	assert.equal(stdout[6], 'Normal message with no indentation.\n');
+}, 'Custom indentation');
+
+await test.run(async () => {
 	const { stdout, stderr } = await test.capture(() => {
 		log.info('This is a {custom} message!');
 		log.error('This is a {custom} message!');
