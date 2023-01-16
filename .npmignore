@@ -21,3 +21,6 @@ tsconfig.json
 # Ignore markdown files except README.md
 *.md
 !README.md
+
+# Ignore docs folder (images for README.md)
+docs
