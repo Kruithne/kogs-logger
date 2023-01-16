@@ -234,11 +234,17 @@ export class Log {
 	 * The progress bar does not automatically move to a 'finished' state when it is
 	 * updated with the value of `1`. You should call `.finish()` when completed.
 	 * 
+	 * @throws {Error}
+	 * Thrown if a dynamic prompt is already active.
+	 * 
 	 * @param prefix - The prefix to appear before the progress bar.
 	 * @param initialPct - The initial percentage to display (0-1).
 	 * @returns A controller for the progress bar.
 	 */
 	progress(prefix: string, initialPct: number = 0): Progress {
+		if (this.#userPrompt !== undefined)
+			throw new Error('Cannot display progress bar while another interactive prompt is active.');
+
 		let currentValue = 0;
 		let finished = false;
 
@@ -289,11 +295,17 @@ export class Log {
 	 * returned trimmed of whitespace. The prompt is always written to the
 	 * `process.stdout` stream, regardless of configured output streams.
 	 * 
+	 * @throws {Error}
+	 * Thrown if a dynamic prompt is already active.
+	 * 
 	 * @param message - Prompt to display to the user.
 	 * @param mask - If true, the user's input will be masked.
 	 * @returns The user's response.
 	 */
 	async prompt(message: string, mask: boolean = false): Promise<string> {
+		if (this.#userPrompt !== undefined)
+			throw new Error('Cannot display input prompt while another interactive prompt is active.');
+
 		if (mask) {
 			return new Promise(resolve => {
 				process.stdin.setRawMode(true);
@@ -346,6 +358,13 @@ export class Log {
 
 	/**
 	 * Prompts the user to select a choice from a list.
+	 * 
+	 * @throws {Error}
+	 * Thrown if a dynamic prompt is already active.
+	 * 
+	 * @throws {Error}
+	 * Thrown if no choices are provided.
+	 * 
 	 * @param choices - Choices to display to the user.
 	 * @param options - Options for the choice prompt.
 	 * @returns A promise that resolves to the user's choice.
@@ -353,6 +372,9 @@ export class Log {
 	async choice(choices: Array<Choice|string>, options?: ChoiceOptions): Promise<ChoiceValue> {
 		if (choices.length === 0)
 			throw new Error('log.choice(): No choices provided');
+
+		if (this.#userPrompt !== undefined)
+			throw new Error('Cannot display choice prompt while another interactive prompt is active.');
 
 		const parsedChoices: Choice[] = choices.map(choice => typeof choice === 'string' ? { label: choice } : choice);
 		const assignedKeys = new Set<string>();
