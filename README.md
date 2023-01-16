@@ -37,6 +37,7 @@ log.info('This is {some} information!');
 - [Stream Piping](#stream-piping) - Piping the logger to a custom stream.
 - [Custom Loggers](#custom-loggers) - Creating custom logging instances.
 - [Line Termination](#line-termination) - It's the end of the line; literally.
+- [Blank Line](#blank-line) - Adding a blank line to the output.
 
 ### Default Log Levels
 
@@ -427,6 +428,22 @@ log.lineTerminator = '\r\n';
 log.info('This is an info message');
 
 // > [i] This is an info message\r\n
+```
+
+### Blank Line
+
+There probably didn't need to be an entire section dedicated to this, but now you're here, the `log.blank()` function adds a blank line.
+
+> **Note:** The blank line is written to the `info` level.
+
+```js
+log.info('Hello from above!');
+log.blank();
+log.info('Hello from below!');
+
+// > [i] Hello from above!
+// >
+// > [i] Hello from below!
 ```
 
 ## What is `@kogs`?

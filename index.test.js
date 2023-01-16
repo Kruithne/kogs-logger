@@ -385,3 +385,15 @@ test('pause/resume logging', () => {
 		spyStderr.mockRestore();
 	}
 });
+
+test('log.blank() should log a blank line', () => {
+	const logger = new Log();
+	const spyStdout = jest.spyOn(process.stdout, 'write').mockImplementation();
+
+	try {
+		logger.blank();
+		expect(spyStdout).toHaveBeenLastCalledWith('\n');
+	} finally {
+		spyStdout.mockRestore();
+	}
+});

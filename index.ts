@@ -122,6 +122,13 @@ export class Log {
 	}
 
 	/**
+	 * Writes an empty line to the default output
+	 */
+	blank(): void {
+		this.#write('info', '');
+	}
+
+	/**
 	 * Logs a message to the default output stream with no prefix/colour.
 	 * @param message - The message to log.
 	 * @param args - Arguments to use when formatting the message.
@@ -483,12 +490,13 @@ export class Log {
 			process.stdout.cursorTo(0);
 		}
 
-		if (this.enableMarkdown)
+		const isEmptyMessage: boolean = message.length === 0;
+		if (!isEmptyMessage && this.enableMarkdown)
 			message = formatMarkdown(message);
 		
 		let output = util.format(message, ...args);
 
-		if (this.#indentationLevel > 0)
+		if (!isEmptyMessage && this.#indentationLevel > 0)
 			output = this.indentString.repeat(this.#indentationLevel) + output;
 
 		for (const [stream, levels] of this.#streams)
