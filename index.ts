@@ -352,8 +352,10 @@ export class Log {
 			return new Promise(resolve => {		
 				process.stdin.once('readable', () => {
 					const chunk = process.stdin.read();
-					if (chunk !== null)
+					if (chunk !== null) {
+						this.#userPrompt = undefined;
 						resolve(chunk?.toString().trim() ?? null);
+					}
 				});
 			});
 		}
