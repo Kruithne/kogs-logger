@@ -391,7 +391,7 @@ test('log.blank() should log a blank line', () => {
 	const spyStdout = jest.spyOn(process.stdout, 'write').mockImplementation();
 
 	try {
-		logger.blank();
+		expect(logger.blank()).toBe(logger);
 		expect(spyStdout).toHaveBeenLastCalledWith('\n');
 	} finally {
 		spyStdout.mockRestore();
