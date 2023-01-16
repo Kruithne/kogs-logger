@@ -1,6 +1,6 @@
 {
 	"name": "@kogs/logger",
-	"version": "3.2.5",
+	"version": "3.2.6",
 	"type": "module",
 	"description": "A simple logging interface.",
 	"main": "index.js",

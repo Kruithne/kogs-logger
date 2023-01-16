@@ -123,9 +123,11 @@ export class Log {
 
 	/**
 	 * Writes an empty line to the default output
+	 * @returns The logger instance.
 	 */
-	blank(): void {
+	blank(): Log {
 		this.#write('info', '');
+		return this;
 	}
 
 	/**

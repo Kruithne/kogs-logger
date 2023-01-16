@@ -432,14 +432,13 @@ log.info('This is an info message');
 
 ### Blank Line
 
-There probably didn't need to be an entire section dedicated to this, but now you're here, the `log.blank()` function adds a blank line.
+There probably didn't need to be an entire section dedicated to this, but now you're here, the `log.blank()` function adds a blank line and returns the logger instance.
 
 > **Note:** The blank line is written to the `info` level.
 
 ```js
 log.info('Hello from above!');
-log.blank();
-log.info('Hello from below!');
+log.blank().info('Hello from below!');
 
 // > [i] Hello from above!
 // >
