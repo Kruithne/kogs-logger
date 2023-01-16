@@ -346,6 +346,9 @@ export class Log {
 				process.stdin.on('data', handler);
 			});
 		} else {
+			this.#userPrompt = message;
+			process.stdout.write(message);
+				
 			return new Promise(resolve => {		
 				process.stdin.once('readable', () => {
 					const chunk = process.stdin.read();
