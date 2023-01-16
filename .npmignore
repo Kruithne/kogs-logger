@@ -1,7 +1,23 @@
-test/
-docs/
+# This file controls what files are ignored for the npm package.
+
+# Ignore TypeScript configuration.
 tsconfig.json
-.eslintrc.json
+
+# Ignore ESlint configuration.
+.eslintrc.cjs
+
+# Ignore the git ignore file.
 .gitignore
+
+# Ignore TypeScript (source).
 *.ts
-!*.d.ts
+
+# Ignore any unit tests.
+*.test.js
+
+# Ignore the GitHub workflow folder.
+.github
+
+# Ignore markdown files except README.md
+*.md
+!README.md

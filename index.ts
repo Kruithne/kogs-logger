@@ -3,8 +3,6 @@ import pc from 'picocolors';
 import fs from 'node:fs';
 
 type Decorator = (message: string) => string;
-type StreamTargets = Set<string> | null;
-
 type ChoiceValue = string|number|boolean;
 
 type Choice = {
@@ -17,8 +15,6 @@ type ChoiceOptions = {
 	margin?: number;
 	prependKey?: boolean;
 };
-
-const NO_LEVEL = '';
 
 interface Progress {
 	/**
@@ -63,19 +59,17 @@ export function formatMarkdown(message: string): string {
 
 export class Log {
 	#loggingLevels: Set<string> = new Set(['info', 'warn', 'error', 'success']);
-	#streams: Map<NodeJS.WritableStream, StreamTargets> = new Map();
-	#defaultStream?: NodeJS.WritableStream;
+	#streams: Map<NodeJS.WritableStream, string[]> = new Map();
 	#userPrompt?: string;
 	#isPaused: boolean = false;
 	enableMarkdown: boolean = true;
 
 	#indentationLevel: number = 0;
 	indentString: string = '  ';
-
 	lineTerminator: string = '\n';
 
 	constructor() {
-		this.pipe(process.stdout, ['info', 'success'], true);
+		this.pipe(process.stdout, ['info', 'success']);
 		this.pipe(process.stderr, ['warn', 'error']);
 	}
 
@@ -133,7 +127,7 @@ export class Log {
 	 * @param args - Arguments to use when formatting the message.
 	 */
 	write(message: string, ...args: string[]): void {
-		this.#write(NO_LEVEL, message, ...args);
+		this.#write('info', message, ...args);
 	}
 
 	/**
@@ -173,48 +167,30 @@ export class Log {
 	}
 
 	/**
-	 * Add an output stream to log messages to.
+	 * Adds a stream to the logger.
 	 * 
 	 * @remarks
-	 * If `levels` is omitted, the stream will receive messages of all levels.
-	 *  
-	 * @param output - The output stream to write to or a path to a file to write to.
-	 * @param levels - Optional array of levels to write to the output stream.
-	 * @param setDefault - Whether to set this stream as the default output.
-	 * @returns The output stream.
+	 * When the stream ends, it will automatically be removed from the list of streams.
+	 * 
+	 * @param streamOrPath - The stream to pipe to. Can be a file path.
+	 * @param levels - The levels to pipe to the stream. If empty, all levels will be piped.
 	 */
-	pipe(output: NodeJS.WritableStream | string, levels?: string[], setDefault: boolean = false): NodeJS.WritableStream {
-		if (typeof output === 'string')
-			output = fs.createWriteStream(output);
+	pipe(streamOrPath: NodeJS.WritableStream | string, levels: string[] = []): void {
+		// If the stream is a string, create a write stream to the file.
+		const stream: NodeJS.WritableStream = typeof streamOrPath === 'string' ? fs.createWriteStream(streamOrPath) : streamOrPath;
 
-		this.#streams.set(output, levels === undefined ? null : new Set(levels));
-
-		if (setDefault)
-			this.#defaultStream = output;
-		else if (this.#defaultStream === output)
-			this.#defaultStream = undefined;
-
-		return output;
+		this.#streams.set(stream, levels);
+		
+		// If the stream ends, remove it from the list of streams.
+		stream.once('close', () => this.#streams.delete(stream));
 	}
 
 	/**
-	 * Remove an output stream from logging.
-	 * 
-	 * @remarks
-	 * If `output` is omitted, all output streams are removed.
-	 * 
-	 * @param output - The output stream to remove.
+	 * Removes a stream from the logger.
+	 * @param stream - The stream to remove from the logger.
 	 */
-	unpipe(output?: NodeJS.WritableStream): void {
-		if (output === undefined) {
-			this.#streams.clear();
-			this.#defaultStream = undefined;
-		} else {
-			this.#streams.delete(output);
-
-			if (this.#defaultStream === output)
-				this.#defaultStream = undefined;
-		}
+	unpipe(stream: NodeJS.WritableStream): void {
+		this.#streams.delete(stream);
 	}
 
 	/**
@@ -227,10 +203,10 @@ export class Log {
 	 * 
 	 * @param level - The level to add. Must be a valid JavaScript identifier.
 	 * @param decorator - Optional decorator function.
-	 * @param addToDefault - Whether to add this level to the default stream.
+	 * @param stream - The stream to write to. Defaults to `process.stdout`.
 	 */
-	addLevel(level: string, decorator?: Decorator, addToDefault: boolean = true): void {
-		if ((this[level] === undefined || this.#loggingLevels.has(level)) && level !== 'default') {
+	level(level: string, decorator?: Decorator, stream: NodeJS.WritableStream = process.stdout): void {
+		if (this[level] === undefined || this.#loggingLevels.has(level)) {
 			this[level] = (message: string, ...args: string[]): void => {
 				if (decorator !== undefined)
 					message = decorator(message);
@@ -238,9 +214,9 @@ export class Log {
 				this.#write(level, message, ...args);
 			};
 
-			// Add this level to the default stream if requested.
-			if (addToDefault)
-				this.#streams.get(this.#defaultStream)?.add(level);
+			const streamLevels = this.#streams.get(stream);
+			if (streamLevels !== undefined && !streamLevels.includes(level))
+				streamLevels.push(level);
 
 			this.#loggingLevels.add(level);
 		} else {
@@ -427,7 +403,7 @@ export class Log {
 		// This looks nicer and pushes the cursor away from the choices.
 		output.push('');
 
-		this.#userPrompt = output.join(' '.repeat(options?.margin ?? 4));
+		this.#userPrompt = output.join(' '.repeat(options?.margin ?? 2));
 		process.stdout.write(this.#userPrompt);
 
 		return new Promise(resolve => {
@@ -488,20 +464,9 @@ export class Log {
 		if (this.#indentationLevel > 0)
 			output = this.indentString.repeat(this.#indentationLevel) + output;
 
-		let hasWritten = false;
-
-		if (level !== NO_LEVEL) {
-			for (const [stream, levels] of this.#streams) {
-				if (levels === null || levels.has(level)) {
-					stream.write(output + this.lineTerminator);
-					hasWritten = true;
-				}
-			}
-		}
-
-		if (!hasWritten)
-			this.#defaultStream?.write(output + this.lineTerminator);
-
+		for (const [stream, levels] of this.#streams)
+			if (stream.writable && levels.length === 0 || levels.includes(level))
+				stream.write(output + this.lineTerminator);
 		
 		if (this.#userPrompt !== undefined)
 			process.stdout.write(this.#userPrompt);

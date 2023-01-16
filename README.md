@@ -1,5 +1,14 @@
 # @kogs/logger
-`@kogs/logger` is a simple logging utility for Node.js.
+![tests status](https://github.com/Kruithne/kogs-logger/actions/workflows/github-actions-test.yml/badge.svg) [![license badge](https://img.shields.io/github/license/Kruithne/kogs-utils?color=blue)](LICENSE)
+
+`@kogs/logger` is a [Node.js](https://nodejs.org/) package that provides a logging interface.
+
+- Provides elegant colour formatting.
+- [printf](https://en.wikipedia.org/wiki/Printf_format_string)-style string formatting.
+- Supports basic [Markdown](https://en.wikipedia.org/wiki/Markdown) formatting.
+- Progress bars, user input, and other interactive features.
+- Full [TypeScript](https://www.typescriptlang.org/) definitions.
+- Only one tiny dependency ([picocolors](https://github.com/alexeyraspopov/picocolors)).
 
 ## Installation
 ```bash
@@ -7,31 +16,70 @@ npm install @kogs/logger
 ```
 
 ## Usage
-**Basic Usage**
 ```js
 import log from '@kogs/logger';
+log.info('This is {some} information!');
 ```
 
-**Default Log Levels**
+## Documentation
 
-By default, `@kogs/logger` has 4 log levels: `info`, `success`, `warn`, and `error`. Each log level has a corresponding color and symbol.
+- [Default Log Levels](#default-log-levels) - The default log levels provided by the logger.
+- [Plain Text Logging](#plain-text-logging) - Logging messages without a prefix/formatting.
+- [Custom Log Levels](#custom-log-levels) - Adding custom log levels.
+- [String Formatting](#string-formatting) - printf-style string formatting.
+- [Decorating Messages](#decorating-messages) - Decorating messages, such as adding colours.
+- [Markdown Formatting](#markdown-formatting) - Formatting messages using Markdown.
+- [Indentation](#indentation) - Indenting messages; useful for nested messages.
+- [Pause/Resume Logging](#pauseresume-logging) - Pausing/resuming logging.
+- [Progress Bar](#progress-bar) - Display dynamic progress bars.
+- [User Input](#user-input) - Prompting the user for input.
+- [User Choice](#user-choice) - Prompting the user to choose from a list of options.
+- [Stream Piping](#stream-piping) - Piping the logger to a custom stream.
+- [Custom Loggers](#custom-loggers) - Creating custom logging instances.
+- [Line Termination](#line-termination) - It's the end of the line; literally.
+
+### Default Log Levels
+
+By default, `@kogs/logger` has 4 log levels: `info`, `success`, `warn`, and `error`, each with a corresponding color and symbol.
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-1.png)
 
-**Plain Text Logging**
+### Plain Text Logging
 
-It may be preferable to log messages without a prefix/formatting, in which case you can use the `log.write()` method.
+It may be preferable to log messages without a prefix/formatting, which can be be done using the `log.write(message, ...args)` method.
 
-Since this has no associated log level, it will be sent to the default stream only, regardless of how the logger is configured.
+> **Note:** For the purposes of custom streams, `log.write(message, ...args)` is considered part of the `info` log level.
 
 ```js
 log.write('Hello, world!');
 // > Hello, world!
 ```
 
-**String Formatting**
+### Custom Log Levels
 
-All logging methods support string formatting using the [util.format()](https://nodejs.org/api/util.html#utilformatformat-args). See the documentation for more information.
+To add a custom logging level, use the `log.level(name, decorator)` method. The first argument is the name of the level and must be a valid JavaScript identifier.
+
+The second argument is an optional decorator function: `fn: (msg: string) => string`. This is useful for adding colors or prefixes to the logged messages.
+
+```js
+log.level('debug', msg => `DEBUG: ${msg}`);
+log.debug('This is a debug message');
+
+// > DEBUG: This is a debug message
+```
+The builtin log levels can be overridden by adding a custom log level with the same name, however you cannot use names of other functions on the `Log` class.
+```js
+// Overwriting log levels is fine:
+log.level('info', (msg) => `INFO: ${msg}`);
+
+// But this will throw an error:
+log.level('level', (msg) => `INFO: ${msg}`);
+```
+The standard log levels have decorators that add colors and prefixes. See the [Decorating Messages](#decorating-messages) section for how to use these.
+
+### String Formatting
+
+All logging methods support [printf](https://en.wikipedia.org/wiki/Printf_format_string)-style string formatting using the [util.format()](https://nodejs.org/api/util.html#utilformatformat-args). See the [documentation](https://nodejs.org/api/util.html#utilformatformat-args) for more information.
 
 ```js
 log.info('This is a %s', 'formatted string');
@@ -45,15 +93,26 @@ log.info('My message is %s bold!', '**not**');
 // > [i] My message is **not** bold!
 ```
 
-**Colour Formatting**
+### Decorating Messages
 
-The builtin log levels have decorators that add colors to logged messages. Instead of colouring the entire message, only text that appears between curly braces will be coloured.
+The built-in log levels have decorators that add colour to any text that appears between curly braces, `{` and `}`.
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-3.png)
 
-**Markdown Formatting**
+The function `formatBraces` is exported from the package for use in your own custom log levels. For colouring, the library [picocolors](https://github.com/alexeyraspopov/picocolors) is used internally.
 
-By default, the logger supports the Markdown formatting syntax for `bold`, `italic` and `strikethrough` text.
+```js
+import { log, formatBraces } from '@kogs/logger';
+import pc from 'picocolors';
+
+log.level('add', m => formatBraces('[{+}] ' + m, pc.green));
+log.add('This is a {custom} log level!');
+```
+![Snippet of code showing the default log levels](docs/readme-snippet-2.png)
+
+### Markdown Formatting
+
+A basic level of the [Markdown](https://en.wikipedia.org/wiki/Markdown) formatting syntax is supported by the logger, including `bold`, `italic` and `strikethrough` text.
 
 ![Snippet of code showing the markdown formatted output](docs/readme-snippet-4.png)
 
@@ -66,20 +125,20 @@ log.info('This is a *bold* message');
 // > [i] This is a *bold* message
 ```
 
-**Indentation**
+For no particular reason, the function `formatMarkdown` which handles the Markdown formatting is exported from the package.
 
-The `log.indent()` and `log.outdent()` methods can be used to indent and unindent the logger's output.
+### Indentation
+
+The `log.indent(x)` and `log.outdent(x)` methods can be used to indent and unindent the logger's output. Both of the functions return the logger instance, allowing for chaining.
 
 ```js
 log.info('This is an info message');
 // > [i] This is an info message
 
-log.indent();
-log.info('This is an indented info message');
+log.indent().info('This is an indented info message');
 // > [i] This is an indented info message
 
-log.outdent();
-log.info('This is an info message again');
+log.outdent().info('This is an info message again');
 // > [i] This is an info message again
 ```
 
@@ -87,29 +146,24 @@ By default, indentation is done using 2 spaces. You can change this by setting t
 
 ```js
 log.indentString = '\t';
-log.indent();
-
-log.info('This is an indented info message');
+log.indent().info('This is an indented info message');
 // > [i] 	This is an indented info message
 ```
 
-Additionally, you can provide a number to `log.indent()` and `log.outdent()` to specify the number of indentations to add/remove.
+Additionally, you can provide a number to `log.indent(x)` and `log.outdent(x)` to specify the number of indentations to add/remove.
 
 ```js
-log.indent(4);
-log.info('This is an indented info message');
+log.indent(4).info('This is an indented info message');
 // > [i]             This is an indented info message
 
-log.outdent(2);
-log.info('This is an info message again');
+log.outdent(2).info('This is an info message again');
 // > [i]     This is an info message again
 ```
 
 The convinience method `log.clearIndentation()` can be used to reset the indentation level to 0.
 
 ```js
-log.indent(4);
-log.info('This is an indented info message');
+log.indent(4).info('This is an indented info message');
 // > [i]         This is an indented info message
 
 log.clearIndentation();
@@ -117,35 +171,26 @@ log.info('This is an info message again');
 // > [i] This is an info message again
 ```
 
-For additional convinience, the `log.indent()` and `log.outdent()` functions are fluid and return the logger instance, allowing you to chain them together.
+### Pause/Resume Logging
+
+The `log.pause()` and `log.resume()` methods can be used to temporarily disable logging.
+
+Any messages logged while logging is paused will be discarded and **not** retroactively logged when `log.resume()` is called.
 
 ```js
-log.indent().write('Something');
-// >     Something
-```
-
-**Pause/Resume Logging**
-
-The `log.pause()` and `log.resume()` methods can be used to temporarily disable logging. Any messages logged while logging is paused will be discarded and **not** retroactively logged when `log.resume()` is called.
-
-```js
-log.info('This is an info message');
-// > [i] This is an info message
-
 log.pause();
 log.info('This message will not be logged');
 
 log.resume();
-
 log.info('This message will be logged');
 // > [i] This message will be logged
 ```
 
-**Progress Bar**
+### Progress Bar
 
-The `log.progress()` method allows you to display a dynamic progress bar in the terminal. The function is non-blocking and returns a progress bar object.
+The `log.progress(message)` method allows you to display a dynamic progress bar in the terminal. The function is non-blocking and returns a progress bar object.
 
-> Note: Values provided to `progress.update()` are clamped between 0-1, meaning any value lower than 0 will be treated as 0, and any value higher than 1 will be treated as 1.
+> **Note:** Values provided to `progress.update(value)` are clamped between 0-1, meaning any value lower than 0 will be treated as 0, and any value higher than 1 will be treated as 1.
 
 ```js
 const progress = log.progress('Downloading > ');
@@ -174,11 +219,11 @@ https.get(someZipURL, (response) => {
 // Downloading > [========================                ] 60%
 // Downloading > [========================================] 100%
 ```
-> Note: The progress bar is always and only written to `process.stdout`, regardless of how the logger is configured.
+> **Note:** The progress bar is always and only written to `process.stdout`, regardless of how the logger is configured.
+>
+> Additionally, messages sent through the logger while a progress bar is active will appear above the progress bar, and the progress bar will be reprinted after the message is logged.
 
-> Note: Messages sent through the logger while a progress bar is active will appear above the progress bar, and the progress bar will be reprinted after the message is logged.
-
-Once `progress.update()` has been provided with a value of 1, the progress bar will automatically finish and turn green. To finish prematurely, you can call `progress.finish()`, which will skip to 100% and turn the progress bar green.
+Once `progress.update(value)` has been provided with a value of 1, the progress bar will automatically finish and turn green. To finish prematurely, you can call `progress.finish()`, which will skip to 100% and turn the progress bar green.
 
 In the event that you want to indicate failure, you can call `progress.cancel()` instead. This will leave the progress bar at its current value and turn it red.
 
@@ -192,9 +237,9 @@ response.on('error', e => {
 // > [!] Failed to download file: [error message]
 ```
 
-**User Prompting**
+### User Input
 
-The `log.prompt()` method allows you to prompt the terminal user for input.
+The `log.prompt(message)` method allows you to prompt the terminal user for input.
 
 ```js
 const name = await log.prompt('What is your name? ');
@@ -203,11 +248,9 @@ log.info('Hello, %s!', name);
 // > What is your name? [user input]
 // > [i] Hello, [user input]!
 ```
-> Note: The prompt is always and only written to `process.stdout`, regardless of how the logger is configured.
+> **Note:** The prompt is always and only written to `process.stdout`, regardless of how the logger is configured.
 
-While `log.prompt()` is waiting for user input, logging functions can still be used freely (with the exception of dynamic functions such as `prompt()` and `progress()`).
-
-Messages logged while a prompt is active will appear above the prompt, and the prompt will be reprinted after the message is logged.
+While `log.prompt(message)` is waiting for user input, normal logging functions can still be used freely. Messages logged while a prompt is active will appear above the prompt, and the prompt will be reprinted after the message is logged.
 
 ```js
 log.info('This is the first message sent.');
@@ -223,22 +266,11 @@ log.info('This is the second message sent.');
 ```
 If you want to ensure that nothing is logged while the user is being prompted, you can use the `log.pause()` and `log.resume()` methods.
 
-> Note: Keep in mind that all messages logged while the logger is paused will be discarded.
+> **Note:** Keep in mind that all messages logged while the logger is paused will be discarded.
 
-```js
-log.pause();
-log.prompt('What is your name? ').then(name => {
-	log.info('Hello, %s!', name);
-	log.resume();
-});
-log.info('This message will not be logged');
+In some scenarios, the user may be entering sensitive information. In these cases, the second parameter of `log.prompt(message)` can be set to `true` to mask the user's input.
 
-// > What is your name? [user input]
-// > [i] Hello, [user input]!
-```
-In some scenarios, the user may be entering sensitive information. In these cases, the second parameter of `log.prompt()` can be set to `true` to mask the user's input.
-
-> Note: Keep in mind that this only masks the input in the terminal, the actual value is still uncensored.
+> **Note:** Keep in mind that this only masks the input in the terminal, the actual value is still uncensored.
 ```js
 const pass = await log.prompt('Password > ', true);
 log.info('Your password is %s', pass);
@@ -247,9 +279,9 @@ log.info('Your password is %s', pass);
 // > [i] Your password is potato
 ```
 
-**User Choice**
+### User Choice
 
-When writing a CLI application, you may want to prompt the user to choose from a list of options. The `log.choice()` method allows you to do this.
+When writing a CLI application, you may want to prompt the user to choose from a list of options. The `log.choice(...choices)` method allows you to do this.
 
 ```js
 log.info('What is your favorite color?');
@@ -257,7 +289,7 @@ const choice = await log.choice('Blue', 'Red');
 log.success('You chose %s!', choice);
 
 // > [i] What is your favorite color?
-// >     (b) Blue    (r) Red    
+// >   (b) Blue  (r) Red  
 // > [✓] You chose Blue!
 ```
 
@@ -271,7 +303,7 @@ const choice = await log.choice([
 	{ label: 'Cancel', key: 'X' }
 ]);
 
-// >     (C) Continue    (X) Cancel    
+// >   (C) Continue  (X) Cancel  
 ```
 
 You're not restricted to just letters. For example if you wanted to use `Enter` and `Escape`, you could use the escape codes `\r` and `\x1B` respectively.
@@ -285,10 +317,10 @@ const choice = await log.choice([
 	{ label: `(${pc.red('Esc')}) Cancel`, key: '\x1B' }
 ], { prependKey: false });
 
-// >     (Enter) Continue    (Esc) Cancel    
+// >   (Enter) Continue  (Esc) Cancel    
 ```
 
-The return value from `log.choice` is the label of the choice that was selected. To change what is returned, you can set the `value` property on the choice object; this can be a `string`, `number` or `boolean`.
+The return value from `log.choice(...choices)` is the label of the choice that was selected. To change what is returned, you can set the `value` property on the choice object; this can be a `string`, `number` or `boolean`.
 
 ```js
 const choice = await log.choice([
@@ -296,7 +328,7 @@ const choice = await log.choice([
 	{ label: 'Cancel', value: 'opt-cancel' }
 ]);
 
-// >    (c) Continue    (2) Cancel
+// >  (c) Continue  (2) Cancel
 
 if (choice === 'opt-continue') {
 	// ...
@@ -306,129 +338,62 @@ if (choice === 'opt-continue') {
 ```
 In the above example, the `Cancel` choice is assigned the key `2` because the first letter of `Cancel` is `C`, which is already taken by the `Continue` choice.
 
-By default, the margin (space either side of the choices) is 4. This can be customized by setting the `margin` property in the options object.
+By default, the margin (space either side of the choices) is 2. This can be customized by setting the `margin` property in the options object.
 
 ```js
 const choice = await log.choice([
 	{ label: 'Continue', key: 'C' },
 	{ label: 'Cancel', key: 'X' }
-], { margin: 2 });
+], { margin: 4 });
 
-// >  (C) Continue  (X) Cancel  
+// >    (C) Continue    (X) Cancel    
 ```
 
-**Custom Log Levels**
+### Stream Piping
 
-To add a custom logging level, use the `log.addLevel()` method. The first argument is the name of the level and must be a valid JavaScript identifier.
+By default, the logger writes messages of the `info` and `success` level to `process.stdout` and messages of the `warn` and `error` level to `process.stderr`.
 
-The second argument is an optional decorator function which takes the log message as an argument and returns a string. This is useful for adding colors or symbols to the log message.
+To add an additional stream to the logger, use the `log.pipe(stream, levels)` method. This takes a [`WritableStream`](https://nodejs.org/api/stream.html#stream_class_stream_writable) and an array of log levels to pipe.
 
 ```js
-log.addLevel('debug', (msg) => `DEBUG: ${msg}`);
-log.debug('This is a debug message');
-
-// > DEBUG: This is a debug message
+const stream = fs.createWriteStream('log.txt');
+log.pipe(stream, ['info', 'success']);
 ```
-The builtin log levels can be overridden by adding a custom log level with the same name, however you cannot use names of other functions on the `Log` class.
-```js
-// Overwriting log levels is fine:
-log.addLevel('info', (msg) => `INFO: ${msg}`);
 
-// But this will throw an error:
-log.addLevel('addLevel', (msg) => `INFO: ${msg}`);
+If the `levels` argument is omitted or empty, all log levels will be piped to the stream. Additionally, passing a string as the first argument will treat it as a file path and create a write stream for you.
+
+```js
+log.pipe('log.txt'); // Pipe all log levels to log.txt
 ```
-The standard log levels have decorators that add colors and symbols to the logged messages. If you want to copy this behavior, you can use the `formatBraces` decorator function in combination with a coloring library; internally [picocolors](https://github.com/alexeyraspopov/picocolors) is used.
+A stream can be removed from the logger by calling `log.unpipe(stream)`. Streams will be **automatically** removed if they are closed.
 
 ```js
-import { log, formatBraces } from '@kogs/logger';
-import pc from 'picocolors';
+const stream = fs.createWriteStream('log.txt');
+log.pipe(stream, ['info', 'success']);
 
-log.addLevel('add', message => {
-	return formatBraces('[{+}] ' + message, pc.green);
+// Remove and keep open.
+log.unpipe(stream); // Remove stream manually but still open.
+stream.write('This will not be logged');
+
+// End stream and remove automatically.
+stream.end(cb => {
+	// Stream is now automatically removed from the logger.
 });
-log.add('This is a {custom} log level!');
 ```
-![Snippet of code showing the default log levels](docs/readme-snippet-2.png)
 
-**Output Flow**
+In addition to adding/removing streams, you can also adjust the levels of existing streams with the `log.pipe(stream, levels)` method.
 
-By default, all log messages of the `info` and `success` level are written to `process.stdout`, and the `warn` and `error` levels are written to `process.stderr`.
-
-Additionally, `process.stdout` is configured as the default output stream. In the event that a message is logged, but there is no output stream to catch it, the message default will be used as a fallback.
+> **Note:** The provided levels are not additive, they replace the existing levels for the stream, so be sure to include all the levels you want to pipe.
 
 ```js
-log.info('This is an info message');
-// stdout -> [i] This is an info message
+// Add `warn` level to process.stdout.
+log.pipe(process.stdout, ['info', 'success', 'warn']);
 
-log.warn('This is a warning');
-// stderr -> [!] This is a warning
-
-log.addLevel('test', undefined, false);
-log.test('This is a test message');
-// stdout -> This is a test message
-```
-In the above example, the third parameter `addToDefault` for `log.addLevel()` is explicitly set to `false` to demonstrate that the default stream is used as a fallback.
-
-If `addToDefault` is set to `true`, the added `test` level will be implicitly added to the default stream, which at the time is `process.stdout`. The key difference between the two is that with `addToDefault` as `true`, the `test` level will stay assigned to `process.stdout` even if the default stream is changed.
-
-```js
-// Add `test` level to the default stream.
-log.addLevel('test', undefined, true);
-log.test('This is a test message');
-// stdout -> This is a test message
-
-// Change the default stream to `process.stderr`.
-log.pipe(process.stderr, ['warn', 'error'], true);
-log.test('This is a test message');
-// stdout -> This is a test message
-
-// Since `test` was implicitly added to the current default stream, it will
-// stay assigned to the default stream at the time of creation.
-
-// Add `test2` level but do not add it to the default stream.
-// It will now fallback to `process.stderr`.
-log.addLevel('test2', undefined, false);
-log.test2('This is a test message');
-// stderr -> This is a test message
-
-// Change the default stream to `process.stdout`.
-log.pipe(process.stdout, ['info', 'success'], true);
-log.test2('This is a test message');
-// stdout -> This is a test message
-
-// Since `test2` was not implicitly added to the default stream, it will
-// fallback to the default stream at the time of logging.
-```
-Additional output streams can be added by calling the `log.pipe()` method. The first argument is a writable stream, the second argument is an array of log levels to send to the stream, and the third argument is a boolean indicating whether this stream should be the default fallback stream.
-
-```js
-const myLoggingFile = fs.createWriteStream('my-logs.txt');
-log.pipe(myLoggingFile, ['test']);
-
-log.test('This is a test message');
-// myLoggingFile -> This is a test message
-```
-If the second argument is omitted, the output will be considered a catch-all stream and will receive **all** log messages.
-
-```js
-log.pipe(myLoggingFile);
-
-log.info('This is an info message');
-// myLoggingFile -> [i] This is an info message
+// Remove `warn` from process.stderr to prevent duplication.
+log.pipe(process.stderr, ['error']);
 ```
 
-> Note: If a logged message has no implicit output stream, but is caught by a catch-all stream, the message is considered to have been handled and will not be sent to the default fallback stream.
-
-If a string is passed as the first argument to `log.pipe()`, it will be treated as a file path and a writable stream will be created for it. For convienence, `log.pipe()` always returns the stream that was created or provided.
-
-```js
-const stream = log.pipe('my-logs.txt');
-log.info('This is an info message');
-
-// my-logs.txt -> [i] This is an info message
-```
-
-**Custom Loggers**
+### Custom Loggers
 
 By default, the `log` object is a singleton instance of the `Log` class. You can create your own instances of the `Log` class by importing it.
 
@@ -446,7 +411,7 @@ customLog.info('This is a custom log instance');
 
 Any changes made to the global `log` instance will not be reflected in custom log instances and vice versa. Unless you need to create multiple loggers, it is recommended to use the global `log` instance for convenience.
 
-**Line Termination**
+### Line Termination
 
 By default, output lines are terminated with the `\n` character. To change this, you can set the `lineTerminator` property.
 
@@ -456,6 +421,20 @@ log.info('This is an info message');
 
 // > [i] This is an info message\r\n
 ```
+
+## What is `@kogs`?
+`@kogs` is a collection of packages that I've written to consolidate the code I often reuse across my projects with the following goals in mind:
+
+- Consistent API.
+- Minimal dependencies.
+- Full TypeScript definitions.
+- Avoid feature creep.
+- ES6+ syntax.
+
+All of the packages in the `@kogs` collection can be found [on npm under the `@kogs` scope.](https://www.npmjs.com/settings/kogs/packages)
+
+## Contributing / Feedback / Issues
+Feedback, bug reports and contributions are welcome. Please use the [GitHub issue tracker](https://github.com/Kruithne/kogs-utils/issues) and follow the guidelines found in the [CONTRIBUTING](CONTRIBUTING.md) file.
 
 ## License
 The code in this repository is licensed under the ISC license. See the [LICENSE](LICENSE) file for more information.
