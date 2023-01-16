@@ -298,11 +298,11 @@ export class Log {
 	 * @throws {Error}
 	 * Thrown if a dynamic prompt is already active.
 	 * 
-	 * @param message - Prompt to display to the user.
+	 * @param message - Prompt to display to the user, defaults to '> '.
 	 * @param mask - If true, the user's input will be masked.
 	 * @returns The user's response.
 	 */
-	async prompt(message: string, mask: boolean = false): Promise<string> {
+	async prompt(message: string = '> ', mask: boolean = false): Promise<string> {
 		if (this.#userPrompt !== undefined)
 			throw new Error('Cannot display input prompt while another interactive prompt is active.');
 

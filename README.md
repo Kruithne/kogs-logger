@@ -250,6 +250,13 @@ log.info('Hello, %s!', name);
 ```
 > **Note:** The prompt is always and only written to `process.stdout`, regardless of how the logger is configured.
 
+If the prompt message is not provided, it will default to `> `.
+
+```js
+const name = await log.prompt();
+// > [user input]
+```
+
 While `log.prompt(message)` is waiting for user input, normal logging functions can still be used freely. Messages logged while a prompt is active will appear above the prompt, and the prompt will be reprinted after the message is logged.
 
 ```js
