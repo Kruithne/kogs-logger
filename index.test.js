@@ -253,6 +253,11 @@ test('brace formatting', () => {
 });
 
 test('adding output stream with pipe()', async () => {
+	// We're not actually consuming the stream, but we mock them to prevent
+	// the output from being printed to the console.
+	const spyStdout = jest.spyOn(process.stdout, 'write').mockImplementation();
+	const spyStderr = jest.spyOn(process.stderr, 'write').mockImplementation();
+
 	try {
 		const stream = fs.createWriteStream('./stream_output_test.txt');
 		const logger = new Log();
@@ -286,6 +291,9 @@ test('adding output stream with pipe()', async () => {
 	} finally {
 		// Remove the file.
 		await fs.promises.unlink('./stream_output_test.txt');
+
+		spyStdout.mockRestore();
+		spyStderr.mockRestore();
 	}
 });
 
