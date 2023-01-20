@@ -7,16 +7,16 @@ test('default logging levels', () => {
 	const spyStderr = jest.spyOn(process.stderr, 'write').mockImplementation();
 
 	log.info('This is an info log level!'); // stdout
-	expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[36mi\x1B[39m] This is an info log level!\n');
+	expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m This is an info log level!\n');
 
 	log.warn('This is a warning log level!'); // stderr
-	expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[33m!\x1B[39m] This is a warning log level!\n');
+	expect(spyStderr).toHaveBeenLastCalledWith('\x1B[33m!\x1B[39m This is a warning log level!\n');
 
 	log.error('This is an error log level!'); // stderr
-	expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[31mx\x1B[39m] This is an error log level!\n');
+	expect(spyStderr).toHaveBeenLastCalledWith('\x1B[31mx\x1B[39m This is an error log level!\n');
 
 	log.success('This is a success log level!'); // stdout
-	expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[32m✓\x1B[39m] This is a success log level!\n');
+	expect(spyStdout).toHaveBeenLastCalledWith('\x1B[32m✓\x1B[39m This is a success log level!\n');
 
 	log.write('This is a plain message!'); // stdout
 	expect(spyStdout).toHaveBeenLastCalledWith('This is a plain message!\n');
@@ -233,16 +233,16 @@ test('brace formatting', () => {
 
 	try {
 		logger.info('This is a {custom} message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[36mi\x1B[39m] This is a \x1B[36mcustom\x1B[39m message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m This is a \x1B[36mcustom\x1B[39m message!\n');
 
 		logger.error('This is a {custom} message!');
-		expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[31mx\x1B[39m] This is a \x1B[31mcustom\x1B[39m message!\n');
+		expect(spyStderr).toHaveBeenLastCalledWith('\x1B[31mx\x1B[39m This is a \x1B[31mcustom\x1B[39m message!\n');
 
 		logger.warn('This is a {custom} message!');
-		expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[33m!\x1B[39m] This is a \x1B[33mcustom\x1B[39m message!\n');
+		expect(spyStderr).toHaveBeenLastCalledWith('\x1B[33m!\x1B[39m This is a \x1B[33mcustom\x1B[39m message!\n');
 
 		logger.success('This is a {custom} message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[32m✓\x1B[39m] This is a \x1B[32mcustom\x1B[39m message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[32m✓\x1B[39m This is a \x1B[32mcustom\x1B[39m message!\n');
 
 		// Test direct use of the `formatBraces` decorator.
 		expect(formatBraces('This is a {direct} test', () => 'potato')).toBe('This is a potato test');
@@ -284,8 +284,8 @@ test('adding output stream with pipe()', async () => {
 		const lines = fileContents.split('\n');
 
 		expect(lines.length).toBe(4);
-		expect(lines[0]).toBe('[\x1B[36mi\x1B[39m] This is an info log level!');
-		expect(lines[1]).toBe('[\x1B[33m!\x1B[39m] This is a warning log level!');
+		expect(lines[0]).toBe('\x1B[36mi\x1B[39m This is an info log level!');
+		expect(lines[1]).toBe('\x1B[33m!\x1B[39m This is a warning log level!');
 		expect(lines[2]).toBe('This is a test log level!');
 		expect(lines[3]).toBe('');
 	} finally {
@@ -303,10 +303,10 @@ test('reconfigure stream levels with pipe()', () => {
 
 	try {
 		logger.info('This is an info message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[36mi\x1B[39m] This is an info message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m This is an info message!\n');
 
 		logger.success('This is a success message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[32m✓\x1B[39m] This is a success message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[32m✓\x1B[39m This is a success message!\n');
 
 		expect(spyStdout).toHaveBeenCalledTimes(2);
 
@@ -314,7 +314,7 @@ test('reconfigure stream levels with pipe()', () => {
 		logger.pipe(process.stdout, ['info']);
 
 		logger.info('This is an info message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[36mi\x1B[39m] This is an info message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m This is an info message!\n');
 
 		logger.success('This is a success message!'); // This should now be ignored.
 		expect(spyStdout).toHaveBeenCalledTimes(3);
@@ -330,13 +330,13 @@ test('remove stream with unpipe()', () => {
 
 	try {
 		logger.info('This is an info message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[36mi\x1B[39m] This is an info message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m This is an info message!\n');
 
 		logger.success('This is a success message!');
-		expect(spyStdout).toHaveBeenLastCalledWith('[\x1B[32m✓\x1B[39m] This is a success message!\n');
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[32m✓\x1B[39m This is a success message!\n');
 
 		logger.error('This is an error message!');
-		expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[31mx\x1B[39m] This is an error message!\n');
+		expect(spyStderr).toHaveBeenLastCalledWith('\x1B[31mx\x1B[39m This is an error message!\n');
 
 		expect(spyStdout).toHaveBeenCalledTimes(2);
 		expect(spyStderr).toHaveBeenCalledTimes(1);
@@ -352,7 +352,7 @@ test('remove stream with unpipe()', () => {
 
 		// process.stderr should not be affected.
 		logger.error('This is an error message!');
-		expect(spyStderr).toHaveBeenLastCalledWith('[\x1B[31mx\x1B[39m] This is an error message!\n');
+		expect(spyStderr).toHaveBeenLastCalledWith('\x1B[31mx\x1B[39m This is an error message!\n');
 	} finally {
 		spyStdout.mockRestore();
 		spyStderr.mockRestore();

@@ -84,14 +84,14 @@ All logging methods support [printf](https://en.wikipedia.org/wiki/Printf_format
 
 ```js
 log.info('This is a %s', 'formatted string');
-// > [i] This is a formatted string
+// > i This is a formatted string
 ```
 
 Arguments provided to the logging methods for string formatting are **not** subject to colour or Markdown formatting.
 
 ```js
 log.info('My message is %s bold!', '**not**');
-// > [i] My message is **not** bold!
+// > i My message is **not** bold!
 ```
 
 ### Decorating Messages
@@ -135,7 +135,7 @@ If you want to disable Markdown formatting, you can do so by setting the propert
 log.enableMarkdown = false;
 
 log.info('This is a *bold* message');
-// > [i] This is a *bold* message
+// > i This is a *bold* message
 ```
 
 For no particular reason, the function `formatMarkdown` which handles the Markdown formatting is exported from the package.
@@ -146,13 +146,13 @@ The `log.indent(x)` and `log.outdent(x)` methods can be used to indent and unind
 
 ```js
 log.info('This is an info message');
-// > [i] This is an info message
+// > i This is an info message
 
 log.indent().info('This is an indented info message');
-// > [i] This is an indented info message
+// > i This is an indented info message
 
 log.outdent().info('This is an info message again');
-// > [i] This is an info message again
+// > i This is an info message again
 ```
 
 By default, indentation is done using 2 spaces. You can change this by setting the `indentString` property on the logger.
@@ -160,28 +160,28 @@ By default, indentation is done using 2 spaces. You can change this by setting t
 ```js
 log.indentString = '\t';
 log.indent().info('This is an indented info message');
-// > [i] 	This is an indented info message
+// > i 	This is an indented info message
 ```
 
 Additionally, you can provide a number to `log.indent(x)` and `log.outdent(x)` to specify the number of indentations to add/remove.
 
 ```js
 log.indent(4).info('This is an indented info message');
-// > [i]             This is an indented info message
+// > i             This is an indented info message
 
 log.outdent(2).info('This is an info message again');
-// > [i]     This is an info message again
+// > i     This is an info message again
 ```
 
 The convinience method `log.clearIndentation()` can be used to reset the indentation level to 0.
 
 ```js
 log.indent(4).info('This is an indented info message');
-// > [i]         This is an indented info message
+// > i         This is an indented info message
 
 log.clearIndentation();
 log.info('This is an info message again');
-// > [i] This is an info message again
+// > i This is an info message again
 ```
 
 ### Pause/Resume Logging
@@ -196,7 +196,7 @@ log.info('This message will not be logged');
 
 log.resume();
 log.info('This message will be logged');
-// > [i] This message will be logged
+// > i This message will be logged
 ```
 
 ### Progress Bar
@@ -247,7 +247,7 @@ response.on('error', e => {
 });
 
 // Downloading > [============                            ] 30%
-// > [!] Failed to download file: [error message]
+// > ! Failed to download file: [error message]
 ```
 
 ### User Input
@@ -259,7 +259,7 @@ const name = await log.prompt('What is your name? ');
 log.info('Hello, %s!', name);
 
 // > What is your name? [user input]
-// > [i] Hello, [user input]!
+// > i Hello, [user input]!
 ```
 > **Note:** The prompt is always and only written to `process.stdout`, regardless of how the logger is configured.
 
@@ -279,10 +279,10 @@ log.prompt('What is your name? ').then(name => {
 });
 log.info('This is the second message sent.');
 
-// > [i] This is the first message sent.
-// > [i] This is the second message sent.
+// > i This is the first message sent.
+// > i This is the second message sent.
 // > What is your name? [user input]
-// > [i] Hello, [user input]!
+// > i Hello, [user input]!
 ```
 If you want to ensure that nothing is logged while the user is being prompted, you can use the `log.pause()` and `log.resume()` methods.
 
@@ -296,7 +296,7 @@ const pass = await log.prompt('Password > ', true);
 log.info('Your password is %s', pass);
 
 // > Password > ******
-// > [i] Your password is potato
+// > i Your password is potato
 ```
 
 ### User Choice
@@ -308,9 +308,9 @@ log.info('What is your favorite color?');
 const choice = await log.choice('Blue', 'Red');
 log.success('You chose %s!', choice);
 
-// > [i] What is your favorite color?
+// > i What is your favorite color?
 // >   (b) Blue  (r) Red  
-// > [✓] You chose Blue!
+// > ✓ You chose Blue!
 ```
 
 A few things here are happening by default here which we can customize. The first is that we are automatically assigning a key to each choice. This is done by taking the first letter of the choice and using it as the key.
@@ -426,7 +426,7 @@ import { Log, log } from '@kogs/logger';
 const customLog = new Log();
 customLog.info('This is a custom log instance');
 
-// > [i] This is a custom log instance
+// > i This is a custom log instance
 ```
 
 Any changes made to the global `log` instance will not be reflected in custom log instances and vice versa. Unless you need to create multiple loggers, it is recommended to use the global `log` instance for convenience.
@@ -439,7 +439,7 @@ By default, output lines are terminated with the `\n` character. To change this,
 log.lineTerminator = '\r\n';
 log.info('This is an info message');
 
-// > [i] This is an info message\r\n
+// > i This is an info message\r\n
 ```
 
 ### Blank Line
@@ -452,9 +452,9 @@ There probably didn't need to be an entire section dedicated to this, but now yo
 log.info('Hello from above!');
 log.blank().info('Hello from below!');
 
-// > [i] Hello from above!
+// > i Hello from above!
 // >
-// > [i] Hello from below!
+// > i Hello from below!
 ```
 
 ## What is `@kogs`?
