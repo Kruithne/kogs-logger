@@ -100,6 +100,18 @@ The built-in log levels have decorators that add colour to any text that appears
 
 ![Snippet of code showing the default log levels](docs/readme-snippet-3.png)
 
+If you want to decorate an array of items, you can use the `formatArray` function exported from the package.
+
+```js
+import { log, formatArray } from '@kogs/logger';
+
+const a = formatArray(['a', 'b', 'c']); // '{a}, {b}, {c}'
+const b = formatArray(['a', 'b', 'c'], ' | '); // '{a} | {b} | {c}'
+
+log.info('Here are your options: ' + a);
+log.info('Here are your options: ' + b);
+```
+
 The function `formatBraces` is exported from the package for use in your own custom log levels. For colouring, the library [picocolors](https://github.com/alexeyraspopov/picocolors) is used internally.
 
 ```js

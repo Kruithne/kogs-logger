@@ -57,6 +57,17 @@ export function formatMarkdown(message: string): string {
 	return message;
 }
 
+/**
+ * Formats an array by wrapping each item in curly braces and then joining them with the given separator.
+ * This is useful when you want to print a decorated array using this logger.
+ * @param items - The items to format.
+ * @param separator - The separator to use between items.
+ * @returns The formatted string.
+ */
+export function formatArray(items: Array<string | number | boolean>, separator: string = ', '): string {
+	return items.map(item => '{' + item + '}').join(separator);
+}
+
 export class Log {
 	#loggingLevels: Set<string> = new Set(['info', 'warn', 'error', 'success']);
 	#streams: Map<NodeJS.WritableStream, string[]> = new Map();

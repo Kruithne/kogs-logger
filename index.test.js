@@ -1,5 +1,5 @@
 import { expect, jest, test, beforeAll, afterAll } from '@jest/globals';
-import { log, Log, formatBraces } from './index.js';
+import { log, Log, formatBraces, formatArray } from './index.js';
 import fs from 'node:fs';
 
 test('default logging levels', () => {
@@ -404,4 +404,12 @@ test('log.blank() should log a blank line', () => {
 	} finally {
 		spyStdout.mockRestore();
 	}
+});
+
+test('formatArray', () => {
+	expect(formatArray(['a', 'b', 'c'])).toBe('{a}, {b}, {c}');
+	expect(formatArray(['a'])).toBe('{a}');
+	expect(formatArray(['a', true, 50.5])).toBe('{a}, {true}, {50.5}');
+	expect(formatArray(['a', 'b', 'c'], ' or ')).toBe('{a} or {b} or {c}');
+	expect(formatArray(['a'], ' or ')).toBe('{a}');
 });
