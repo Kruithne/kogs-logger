@@ -1,4 +1,4 @@
-import { expect, jest, test, beforeAll, afterAll } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import { log, Log, formatBraces, formatArray } from './index.js';
 import fs from 'node:fs';
 
