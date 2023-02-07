@@ -156,7 +156,7 @@ export class Log {
 	 * @param args - Arguments to use when formatting the message.
 	 */
 	info(message: string, ...args: string[]): void {
-		this.#write('info', formatBraces(`{i} ${message}`, pc.cyan), ...args);
+		this.#write('info', formatBraces(`{i} ${message === undefined ? '' : message}`, pc.cyan), ...args);
 	}
 
 	/**
@@ -165,7 +165,7 @@ export class Log {
 	 * @param args - Arguments to use when formatting the message.
 	 */
 	warn(message: string, ...args: string[]): void {
-		this.#write('warn', formatBraces(`{!} ${message}`, pc.yellow), ...args);
+		this.#write('warn', formatBraces(`{!} ${message === undefined ? '' : message}`, pc.yellow), ...args);
 	}
 
 	/**
@@ -174,7 +174,7 @@ export class Log {
 	 * @param args - Arguments to use when formatting the message.
 	 */
 	error(message: string, ...args: string[]): void {
-		this.#write('error', formatBraces(`{x} ${message}`, pc.red), ...args);
+		this.#write('error', formatBraces(`{x} ${message === undefined ? '' : message}`, pc.red), ...args);
 	}
 
 	/**
@@ -183,7 +183,7 @@ export class Log {
 	 * @param args - Arguments to use when formatting the message.
 	 */
 	success(message: string, ...args: string[]): void {
-		this.#write('success', formatBraces(`{✓} ${message}`, pc.green), ...args);
+		this.#write('success', formatBraces(`{✓} ${message === undefined ? '' : message}`, pc.green), ...args);
 	}
 
 	/**
@@ -502,6 +502,9 @@ export class Log {
 			process.stdout.clearLine(0);
 			process.stdout.cursorTo(0);
 		}
+
+		// Prevent `undefined` from being printed for blank messages.
+		message = message === undefined ? '' : message.toString();
 
 		const isEmptyMessage: boolean = message.length === 0;
 		if (!isEmptyMessage && this.enableMarkdown)

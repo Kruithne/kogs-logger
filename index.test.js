@@ -413,3 +413,29 @@ test('formatArray', () => {
 	expect(formatArray(['a', 'b', 'c'], ' or ')).toBe('{a} or {b} or {c}');
 	expect(formatArray(['a'], ' or ')).toBe('{a}');
 });
+
+test('empty logging functions should print empty messages', () => {
+	const logger = new Log();
+	const spyStdout = jest.spyOn(process.stdout, 'write').mockImplementation();
+	const stdErr = jest.spyOn(process.stderr, 'write').mockImplementation();
+
+	try {
+		logger.info();
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[36mi\x1B[39m \n');
+
+		logger.success();
+		expect(spyStdout).toHaveBeenLastCalledWith('\x1B[32m✓\x1B[39m \n');
+
+		logger.warn();
+		expect(stdErr).toHaveBeenLastCalledWith('\x1B[33m!\x1B[39m \n');
+
+		logger.error();
+		expect(stdErr).toHaveBeenLastCalledWith('\x1B[31mx\x1B[39m \n');
+
+		logger.write();
+		expect(spyStdout).toHaveBeenLastCalledWith('\n');
+	} finally {
+		spyStdout.mockRestore();
+		stdErr.mockRestore();
+	}
+});
