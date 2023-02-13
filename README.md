@@ -1,4 +1,4 @@
-# @kogs/logger &middot; ![tests status](https://github.com/Kruithne/kogs-logger/actions/workflows/github-actions-test.yml/badge.svg) ![typescript](https://img.shields.io/badge/language-typescript-blue) [![license badge](https://img.shields.io/github/license/Kruithne/nwjs-installer?color=blue)](LICENSE) ![npm version](https://img.shields.io/npm/v/nwjs-installer?color=blue)
+# @kogs/logger &middot; ![tests status](https://github.com/Kruithne/kogs-logger/actions/workflows/github-actions-test.yml/badge.svg) ![typescript](https://img.shields.io/badge/language-typescript-blue) [![license badge](https://img.shields.io/github/license/Kruithne/kogs-logger?color=blue)](LICENSE) ![npm version](https://img.shields.io/npm/v/@kogs/logger?color=blue)
 
 `@kogs/logger` is a [Node.js](https://nodejs.org/) package that provides a logging interface.
 
