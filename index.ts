@@ -146,7 +146,7 @@ export class Log {
 	 * @param message - The message to log.
 	 * @param args - Arguments to use when formatting the message.
 	 */
-	write(message: string, ...args: string[]): void {
+	write(message: string, ...args: any[]): void {
 		this.#write('info', message, ...args);
 	}
 
@@ -155,7 +155,7 @@ export class Log {
 	 * @param message - Message to log with optional format specifiers.
 	 * @param args - Arguments to use when formatting the message.
 	 */
-	info(message: string, ...args: string[]): void {
+	info(message: string, ...args: any[]): void {
 		this.#write('info', formatBraces(`{i} ${message === undefined ? '' : message}`, pc.cyan), ...args);
 	}
 
@@ -164,7 +164,7 @@ export class Log {
 	 * @param message - Message to log with optional format specifiers.
 	 * @param args - Arguments to use when formatting the message.
 	 */
-	warn(message: string, ...args: string[]): void {
+	warn(message: string, ...args: any[]): void {
 		this.#write('warn', formatBraces(`{!} ${message === undefined ? '' : message}`, pc.yellow), ...args);
 	}
 
@@ -173,7 +173,7 @@ export class Log {
 	 * @param message - Message to log with optional format specifiers.
 	 * @param args - Arguments to use when formatting the message.
 	 */
-	error(message: string, ...args: string[]): void {
+	error(message: string, ...args: any[]): void {
 		this.#write('error', formatBraces(`{x} ${message === undefined ? '' : message}`, pc.red), ...args);
 	}
 
@@ -182,7 +182,7 @@ export class Log {
 	 * @param message - Message to log with optional format specifiers.
 	 * @param args - Arguments to use when formatting the message.
 	 */
-	success(message: string, ...args: string[]): void {
+	success(message: string, ...args: any[]): void {
 		this.#write('success', formatBraces(`{✓} ${message === undefined ? '' : message}`, pc.green), ...args);
 	}
 
@@ -492,7 +492,7 @@ export class Log {
 	 * @param message - The message to log, optionally containing format specifiers.
 	 * @param args - The arguments to use when formatting the message.
 	 */
-	#write(level: string, message: string, ...args: string[]): void {
+	#write(level: string, message: string, ...args: any[]): void {
 		if (this.#isPaused)
 			return;
 

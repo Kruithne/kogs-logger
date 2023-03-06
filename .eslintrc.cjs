@@ -20,7 +20,7 @@ module.exports = {
 		'jest'
 	],
 	'rules': {
-		'@typescript-eslint/no-explicit-any': 'error',
+		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'indent': [
 			'error',
